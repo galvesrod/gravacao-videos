@@ -2,8 +2,8 @@ from efetuarLogin import RealizarLogin
 
 
 def main():
-    login = RealizarLogin()
-    print(login.getLogin())
+    page = RealizarLogin()
+    
 
 if __name__ == '__main__':
     main()
