@@ -26,9 +26,7 @@ class RealizarLogin:
             page = context.new_page()
             page.set_viewport_size({"width": 1600, "height": 1200})
             page.goto(URL)
-
-            if not SESSION_FILE:
-                pass
+            
 
 
         return page
