@@ -27,6 +27,4 @@ class RealizarLogin:
             page.set_viewport_size({"width": 1600, "height": 1200})
             page.goto(URL)
             
-
-
         return page
