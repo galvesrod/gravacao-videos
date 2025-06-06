@@ -1,5 +1,6 @@
 import math
 import os
+import logger as log
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -33,9 +34,9 @@ def segundos_para_minutos(seg) -> str:
 
 def main():
     gravador = Gravador()
-    main_url = 'https://escola.formacao.dev/'
-    trilha = 'fundamentos-dev/sala/iniciando-com-html-css'
     
+    main_url = 'https://escola.formacao.dev/'
+    trilha = 'fundamentos-dev/sala/iniciando-com-html-css'    
 
      # Configurar Selenium
     chrome_options = Options()
@@ -74,6 +75,8 @@ def main():
     aula_index = 0
     qtde_aulas = len(aulas)
     iniciar_em = 0
+
+    logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
     for nome, aula in aulas:
         if (aula_index < iniciar_em):
@@ -89,7 +92,8 @@ def main():
             sleep(1)
             page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   
             
-            print('========================================================================') 
+            print('========================================================================')
+            logs.info('========================================================================')
 
             sleep(0.5)
             page.execute_script("document.querySelector('video').pause()")
@@ -104,22 +108,25 @@ def main():
             
             os.system('cls')
             gravador.Start(nome)
+            logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index} de {qtde_aulas}')
             duration = 0
             print(f'Gravando aula: {nome} | Aula {aula_index} de {qtde_aulas}' )
             while duration < fullDuration:
                 duration = +page.execute_script("return document.querySelector('video').currentTime;")
                 print(f'\r{segundos_para_minutos(duration)} de { segundos_para_minutos(fullDuration)}', end='', flush=True)
                 continue
-
             
             gravador.Stop()
+            logs.info(f'Gravação da aula: {nome} Concluída!')
             page.switch_to.default_content()
             sleep(3)
 
         except Exception as e:
             print(f'Erro: {e}')
+            logs.erro(f'Erro: {e}')
             continue
         
     
 if __name__ == "__main__":
+    logs = log.Logger()
     main()
