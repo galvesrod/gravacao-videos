@@ -4,3 +4,4 @@ config
 outros_testes
 chromedriver.exegi
 .env
+logs
