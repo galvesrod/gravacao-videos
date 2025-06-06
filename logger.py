@@ -19,6 +19,8 @@ class Logger:
         logging.getLogger("paramiko").setLevel(logging.CRITICAL)
         logging.getLogger("asyncio").setLevel(logging.CRITICAL)
         logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+        logging.getLogger("obsws_python.baseclient.ObsClient").setLevel(logging.CRITICAL)
+        logging.getLogger("obsws_python.reqs.ReqClient").setLevel(logging.CRITICAL)
 
     def info(self, msg:str):
         self.logger.info(f"{msg}")

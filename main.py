@@ -34,7 +34,7 @@ def segundos_para_minutos(seg) -> str:
 
 def main():
     gravador = Gravador()
-    
+
     main_url = 'https://escola.formacao.dev/'
     trilha = 'fundamentos-dev/sala/iniciando-com-html-css'    
 
