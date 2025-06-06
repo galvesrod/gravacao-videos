@@ -5,13 +5,13 @@ import os
 class Gravador():
     def __init__(self):
         self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
+        self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com HTML e CSS'
 
 
     def Start(self, name):
         try:
-            caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com HTML e CSS'
             nome_com_data = name
-            self.cl.set_record_directory(caminho)
+            self.cl.set_record_directory(self.caminho)
             self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)            
 
             # Iniciar a gravação
@@ -23,7 +23,7 @@ class Gravador():
     def Stop(self):
         try:            
             self.cl.stop_record()
-            print("Gravação Finalizado com sucesso!")
+            print(f"\nGravação Finalizado com sucesso.\nGravado em: {self.caminho}")
         except Exception as e:
             print(f"Erro ao finalizar gravação: {e}")
         
