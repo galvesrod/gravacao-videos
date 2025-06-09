@@ -8,9 +8,9 @@ class Gravador():
         self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com HTML e CSS'
 
 
-    def Start(self, name):
+    def Start(self, name:str):
         try:
-            nome_com_data = name
+            nome_com_data = name.replace('/','')
             self.cl.set_record_directory(self.caminho)
             self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)            
 

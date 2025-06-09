@@ -1,6 +1,10 @@
 import math
 import os
 import logger as log
+
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from ctypes import cast, POINTER
+from comtypes import CLSCTX_ALL
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -10,6 +14,36 @@ from gravador import Gravador
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def definir_volume_audio(percentual):
+    """
+    Define o volume para um percentual específico
+    percentual: valor entre 0 e 100
+    """
+    try:
+        
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = cast(interface, POINTER(IAudioEndpointVolume))
+        
+        # Converte percentual para escala 0-1
+        volume_normalizado = max(0.0, min(1.0, percentual / 100.0))
+        
+        # Obtém range do volume
+        volume_min, volume_max, _ = volume.GetVolumeRange()
+        
+        # Calcula volume na escala do sistema
+        volume_sistema = volume_min + (volume_normalizado * (volume_max - volume_min))
+        
+        # Define o volume
+        volume.SetMasterVolumeLevel(volume_sistema, None)
+        
+        print(f"Volume definido para {percentual}%")
+        return True
+        
+    except Exception as e:
+        print(f"Erro ao definir volume: {e}")
+        return False
 
 def obterListaDeAulas(page:webdriver):
     page.get('http://google.com')
@@ -74,7 +108,7 @@ def main():
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 0
+    iniciar_em = 10
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -129,4 +163,5 @@ def main():
     
 if __name__ == "__main__":
     logs = log.Logger()
+    definir_volume_audio(100)    
     main()
