@@ -7,6 +7,13 @@ class Gravador():
         self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
         self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com HTML e CSS'
 
+    def Status(self):       
+        return self.cl.get_record_status()
+       
+    def Remove(self,name:str):
+        file = fr'{self.caminho}\{name}.mkv'
+        print(file)        
+        os.remove(fr'{self.caminho}\{name}.mkv')
 
     def Start(self, name:str):
         try:
