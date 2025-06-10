@@ -108,7 +108,7 @@ def main():
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 26
+    iniciar_em = 27
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -152,14 +152,15 @@ def main():
                 while duration < fullDuration:
                     duration = page.execute_script("return document.querySelector('video').currentTime;")
                     print(f'\r{segundos_para_minutos(duration)} de { segundos_para_minutos(fullDuration)}', end='', flush=True)
+
                     if prev_duration != duration:
                         prev_duration = duration
                         err_ctrl = 0
                         
                     else:
                         err_ctrl += 1
-                        sleep(0.5)
-                        if err_ctrl >= 10:
+                        
+                        if err_ctrl >= 15:
                             # implementar uma correção                            
                             logs.erro(f"A Gravação da aula {aula} está travada, será feito um nova tentativa")
                             gravador.Stop()
@@ -168,11 +169,11 @@ def main():
                             break                
                     continue
                 else:
+                    gravador.Stop()
+                    logs.info(f'Gravação da aula: {nome} Concluída!')
+                    page.switch_to.default_content()
+                    sleep(3)
                     break
-                gravador.Stop()
-                logs.info(f'Gravação da aula: {nome} Concluída!')
-                page.switch_to.default_content()
-                sleep(3)
 
             except Exception as e:
                 print(f'Erro: {e}')
