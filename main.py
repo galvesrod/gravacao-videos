@@ -66,13 +66,8 @@ def segundos_para_minutos(seg) -> str:
     
     return f'{minutos:02d}:{segundos:02d}'
 
-def main():
-    gravador = Gravador()
-
-    main_url = 'https://escola.formacao.dev/'
-    trilha = 'fundamentos-dev/sala/iniciando-com-html-css'    
-
-     # Configurar Selenium
+def configurarChrome() -> webdriver:
+    #  Configurar Selenium
     chrome_options = Options()
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument('--disable-logging')
@@ -83,11 +78,11 @@ def main():
 
     service = Service('chromedriver.exe')  # caminho do chromedriver
     page = webdriver.Chrome(service=service, options=chrome_options)
-    page.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")    
-
-    page.get(main_url)
+    page.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})") 
     page.implicitly_wait(30)
+    return page
 
+def logar(page:webdriver):
     LOGIN_NAME = os.getenv('LOGIN_NAME')
     PWD = os.getenv('PWD')
     
@@ -95,6 +90,11 @@ def main():
     page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/div[2]/div/input').send_keys(PWD)
     page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/button[1]').click()
     page.find_element(By.XPATH,'//*[@id="__next"]/div[1]/div[2]/div/div')
+
+def main(page:webdriver):
+    gravador = Gravador()
+    page = page
+    trilha = 'fundamentos-dev/sala/iniciando-com-html-css'    
 
     page.get(f'{main_url}{trilha}')
     elementos = page.find_elements(By.CSS_SELECTOR, "div[data-lesson-id]")
@@ -182,6 +182,11 @@ def main():
         
     
 if __name__ == "__main__":
+    main_url = 'https://escola.formacao.dev/'    
+
     logs = log.Logger()
     definir_volume_audio(100)    
-    main()
+    page = configurarChrome()
+    page.get(main_url)
+    logar(page)
+    main(page)
