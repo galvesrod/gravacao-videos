@@ -108,7 +108,7 @@ def main():
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 10
+    iniciar_em = 26
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -117,48 +117,67 @@ def main():
             aula_index += 1
             continue
 
-        aula_index += 1
-        url = f'{main_url}{trilha}?aula={aula}'
-        page.get(url)
-        try:            
-            frame = page.find_element(By.XPATH,'//*[@id="player"]')
-            page.switch_to.frame(frame)
-            sleep(1)
-            page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   
-            
-            print('========================================================================')
-            logs.info('========================================================================')
+        while True:
+            aula_index += 1
+            url = f'{main_url}{trilha}?aula={aula}'
+            page.get(url)
+            try:            
+                frame = page.find_element(By.XPATH,'//*[@id="player"]')
+                page.switch_to.frame(frame)
+                sleep(1)
+                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   
+                
+                print('========================================================================')
+                logs.info('========================================================================')
 
-            sleep(0.5)
-            page.execute_script("document.querySelector('video').pause()")
-            sleep(0.5)
-            page.execute_script("document.querySelector('video').currentTime = 0;")
-            page.execute_script("document.querySelector('video').muted = false;")
-            sleep(0.5)
-            page.execute_script("document.querySelector('video').play()")
-            sleep(0.5)
-            fullDuration = page.execute_script("return document.querySelector('video').duration")        
-            fullDuration = +fullDuration
-            
-            os.system('cls')
-            gravador.Start(nome)
-            logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index} de {qtde_aulas}')
-            duration = 0
-            print(f'Gravando aula: {nome} | Aula {aula_index} de {qtde_aulas}' )
-            while duration < fullDuration:
-                duration = +page.execute_script("return document.querySelector('video').currentTime;")
-                print(f'\r{segundos_para_minutos(duration)} de { segundos_para_minutos(fullDuration)}', end='', flush=True)
+                sleep(0.5)
+                page.execute_script("document.querySelector('video').pause()")
+                sleep(0.5)
+                page.execute_script("document.querySelector('video').currentTime = 0;")
+                page.execute_script("document.querySelector('video').muted = false;")
+                sleep(0.5)
+                page.execute_script("document.querySelector('video').play()")
+                sleep(0.5)
+                fullDuration = page.execute_script("return document.querySelector('video').duration")        
+                fullDuration = +fullDuration
+                
+                os.system('cls')
+                gravador.Start(nome)
+                logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index} de {qtde_aulas}')
+                print(f'Gravando aula: {nome} | Aula {aula_index} de {qtde_aulas}' )
+                
+                duration = 0
+                prev_duration = 0
+                err_ctrl = 0
+                while duration < fullDuration:
+                    duration = page.execute_script("return document.querySelector('video').currentTime;")
+                    print(f'\r{segundos_para_minutos(duration)} de { segundos_para_minutos(fullDuration)}', end='', flush=True)
+                    if prev_duration != duration:
+                        prev_duration = duration
+                        err_ctrl = 0
+                        
+                    else:
+                        err_ctrl += 1
+                        sleep(0.5)
+                        if err_ctrl >= 10:
+                            # implementar uma correção                            
+                            logs.erro(f"A Gravação da aula {aula} está travada, será feito um nova tentativa")
+                            gravador.Stop()
+                            sleep(2)
+                            gravador.Remove(nome)
+                            break                
+                    continue
+                else:
+                    break
+                gravador.Stop()
+                logs.info(f'Gravação da aula: {nome} Concluída!')
+                page.switch_to.default_content()
+                sleep(3)
+
+            except Exception as e:
+                print(f'Erro: {e}')
+                logs.erro(f'Erro: {e}')
                 continue
-            
-            gravador.Stop()
-            logs.info(f'Gravação da aula: {nome} Concluída!')
-            page.switch_to.default_content()
-            sleep(3)
-
-        except Exception as e:
-            print(f'Erro: {e}')
-            logs.erro(f'Erro: {e}')
-            continue
         
     
 if __name__ == "__main__":
