@@ -5,3 +5,5 @@ outros_testes
 chromedriver.exegi
 .env
 logs
+progresso.json
+progresso.py

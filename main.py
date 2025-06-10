@@ -13,6 +13,8 @@ from selenium.webdriver.chrome.options import Options
 from gravador import Gravador
 from dotenv import load_dotenv
 
+from progresso import Progresso
+
 load_dotenv()
 
 def definir_volume_audio(percentual):
@@ -108,7 +110,7 @@ def main(page:webdriver):
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 27
+    iniciar_em = 28
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -189,4 +191,5 @@ if __name__ == "__main__":
     page = configurarChrome()
     page.get(main_url)
     logar(page)
-    main(page)
+    Progresso.run(page)
+    # main(page)
