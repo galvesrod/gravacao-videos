@@ -11,13 +11,14 @@ class Gravador():
         return self.cl.get_record_status()
        
     def Remove(self,name:str):
+        name = name.replace('/','').replace('?','')
         file = fr'{self.caminho}\{name}.mkv'
         print(file)        
         os.remove(fr'{self.caminho}\{name}.mkv')
 
     def Start(self, name:str):
         try:
-            nome_com_data = name.replace('/','')
+            nome_com_data = name.replace('/','').replace('?','')
             self.cl.set_record_directory(self.caminho)
             self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)            
 
