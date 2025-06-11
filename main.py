@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from gravador import Gravador
 from dotenv import load_dotenv
+import cv2
 
 from progresso import Progresso
 
@@ -93,10 +94,29 @@ def logar(page:webdriver):
     page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/button[1]').click()
     page.find_element(By.XPATH,'//*[@id="__next"]/div[1]/div[2]/div/div')
 
+def get_video_duration_cv2(video_path):
+    try:
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        
+        duration_seconds = frame_count / fps
+        duration_minutes = duration_seconds / 60
+        
+        cap.release()
+        
+        print(f"Duração: {duration_seconds:.2f} segundos")
+        print(f"Duração: {duration_minutes:.2f} minutos")
+        return duration_seconds
+    except Exception as e:
+        print(f"Erro ao processar o vídeo: {e}")
+        return None
+
+
 def main(page:webdriver):
     gravador = Gravador()
     page = page
-    trilha = 'fundamentos-dev/sala/iniciando-com-html-css'    
+    trilha = 'fundamentos-dev/sala/iniciando-com-programacao'    
 
     page.get(f'{main_url}{trilha}')
     elementos = page.find_elements(By.CSS_SELECTOR, "div[data-lesson-id]")
@@ -110,7 +130,7 @@ def main(page:webdriver):
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 28
+    iniciar_em = 0
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -172,6 +192,11 @@ def main(page:webdriver):
                     continue
                 else:
                     gravador.Stop()
+                    # caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com Programacao'
+                    # caminho = rf'{caminho}\{nome}.mkv'
+                    # tamanho_video = get_video_duration_cv2(caminho)
+                    # print(rf'tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                    # 1/0
                     logs.info(f'Gravação da aula: {nome} Concluída!')
                     page.switch_to.default_content()
                     sleep(3)
@@ -191,5 +216,5 @@ if __name__ == "__main__":
     page = configurarChrome()
     page.get(main_url)
     logar(page)
-    Progresso.run(page)
-    # main(page)
+    # Progresso.run(page)
+    main(page)

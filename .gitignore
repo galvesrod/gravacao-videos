@@ -2,8 +2,8 @@
 __pycache__
 config
 outros_testes
-chromedriver.exegi
 .env
 logs
 progresso.json
+.\progresso.py
 progresso.py

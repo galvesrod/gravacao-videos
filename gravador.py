@@ -5,7 +5,7 @@ import os
 class Gravador():
     def __init__(self):
         self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
-        self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com HTML e CSS'
+        self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com Programacao'
 
     def Status(self):       
         return self.cl.get_record_status()
