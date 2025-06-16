@@ -98,25 +98,19 @@ def get_video_duration_cv2(video_path):
     try:
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        
-        duration_seconds = frame_count / fps
-        duration_minutes = duration_seconds / 60
-        
-        cap.release()
-        
-        print(f"Duração: {duration_seconds:.2f} segundos")
-        print(f"Duração: {duration_minutes:.2f} minutos")
+        frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)        
+        duration_seconds = frame_count / fps        
+        cap.release()       
+
         return duration_seconds
     except Exception as e:
         print(f"Erro ao processar o vídeo: {e}")
         return None
 
-
 def main(page:webdriver):
     gravador = Gravador()
     page = page
-    trilha = 'fundamentos-dev/sala/iniciando-com-programacao'    
+    trilha = 'fundamentos-dev/sala/ambiente-desenvolvimento'    
 
     page.get(f'{main_url}{trilha}')
     elementos = page.find_elements(By.CSS_SELECTOR, "div[data-lesson-id]")
@@ -143,6 +137,7 @@ def main(page:webdriver):
             aula_index += 1
             url = f'{main_url}{trilha}?aula={aula}'
             page.get(url)
+            caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Ambiente de Desenvolvimento'
             try:            
                 frame = page.find_element(By.XPATH,'//*[@id="player"]')
                 page.switch_to.frame(frame)
@@ -164,7 +159,7 @@ def main(page:webdriver):
                 fullDuration = +fullDuration
                 
                 os.system('cls')
-                gravador.Start(nome)
+                gravador.Start(nome,caminho)
                 logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index} de {qtde_aulas}')
                 print(f'Gravando aula: {nome} | Aula {aula_index} de {qtde_aulas}' )
                 
@@ -181,22 +176,25 @@ def main(page:webdriver):
                         
                     else:
                         err_ctrl += 1
-                        
-                        if err_ctrl >= 15:
-                            # implementar uma correção                            
+                        if err_ctrl >= 15:                         
                             logs.erro(f"A Gravação da aula {aula} está travada, será feito um nova tentativa")
-                            gravador.Stop()
+                            gravador.Stop(caminho)
                             sleep(2)
-                            gravador.Remove(nome)
+                            gravador.Remove(nome,caminho)
                             break                
                     continue
                 else:
-                    gravador.Stop()
-                    # caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com Programacao'
-                    # caminho = rf'{caminho}\{nome}.mkv'
-                    # tamanho_video = get_video_duration_cv2(caminho)
-                    # print(rf'tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                    # 1/0
+                    gravador.Stop(caminho)                    
+                    arquivo = rf'{caminho}\{nome}.mkv'                    
+                    sleep(2)
+                    tamanho_video = get_video_duration_cv2(arquivo)
+                    if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
+                        print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                        logs.erro(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                        gravador.Remove(nome,caminho)
+                        aula_index -= 1
+                        continue
+                    
                     logs.info(f'Gravação da aula: {nome} Concluída!')
                     page.switch_to.default_content()
                     sleep(3)
