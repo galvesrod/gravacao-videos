@@ -4,7 +4,10 @@ import os
 
 class Gravador():
     def __init__(self):
-        self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
+        try:
+            self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
+        except Exception as e:
+            print(e)
         # self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com Programacao'
 
     def Status(self):       
@@ -12,9 +15,8 @@ class Gravador():
        
     def Remove(self,name:str, caminho:str):
         name = name.replace('/','').replace('?','')
-        file = fr'{caminho}\{name}.mkv'
-        print(file)        
-        os.remove(fr'{caminho}\{name}.mkv')
+        file = fr'{caminho}\{name}.mkv'  
+        os.remove(file)
 
     def Start(self, name:str,caminho:str):
         try:
@@ -28,10 +30,11 @@ class Gravador():
         except Exception as e:
             print(f"Erro ao iniciar gravação: {e}")
     
-    def Stop(self,caminho:str):
+    def Stop(self,caminho:str, show_succ_msg:bool=True):
         try:            
             self.cl.stop_record()
-            print(f"\nGravação Finalizado com sucesso.\nGravado em: {caminho}")
+            if show_succ_msg:
+                print(f"\nGravação Finalizado com sucesso.\nGravado em: {caminho}")
         except Exception as e:
             print(f"Erro ao finalizar gravação: {e}")
         
