@@ -99,7 +99,7 @@ def logar(page:webdriver):
     page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/button[1]').click()
     page.find_element(By.XPATH,'//*[@id="__next"]/div[1]/div[2]/div/div')
 
-def get_video_duration_cv2(video_path):
+def obterDuracaoDoArquivo(video_path):
     try:
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -200,7 +200,7 @@ def main(page:webdriver):
                     gravador.Stop(caminho)                    
                     arquivo = rf'{caminho}\{nome.replace('/','').replace('?','')}.mkv'                    
                     sleep(2)
-                    tamanho_video = get_video_duration_cv2(arquivo)
+                    tamanho_video = obterDuracaoDoArquivo(arquivo)
                     logs.erro(f'tamanho_video: {tamanho_video}, {type(tamanho_video)}')
                     logs.erro(f'fullDuration: {fullDuration}, {type(fullDuration)}')
                     if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
