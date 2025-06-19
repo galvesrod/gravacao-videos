@@ -129,7 +129,7 @@ def main(page:webdriver):
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 0
+    iniciar_em = 52
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -198,9 +198,11 @@ def main(page:webdriver):
 
                 else:
                     gravador.Stop(caminho)                    
-                    arquivo = rf'{caminho}\{nome}.mkv'                    
+                    arquivo = rf'{caminho}\{nome.replace('/','').replace('?','')}.mkv'                    
                     sleep(2)
                     tamanho_video = get_video_duration_cv2(arquivo)
+                    logs.erro(f'tamanho_video: {tamanho_video}, {type(tamanho_video)}')
+                    logs.erro(f'fullDuration: {fullDuration}, {type(fullDuration)}')
                     if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
                         print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                         logs.erro(rf'Erro linha: 196 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
