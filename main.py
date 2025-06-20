@@ -1,4 +1,3 @@
-import math
 import os
 import traceback, sys
 import logger as log
@@ -14,9 +13,7 @@ from selenium.webdriver.chrome.options import Options
 from gravador import Gravador
 from dotenv import load_dotenv
 import cv2
-from datetime import datetime
 
-from progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 
 load_dotenv()
@@ -112,8 +109,8 @@ def obterDuracaoDoArquivo(video_path):
         print(f"Erro ao processar o vídeo: {e}")
         return None
 
-def main(page:webdriver):
-    gravador = Gravador()
+def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
+    gravador = Gravador() if gravar else None
     page = page
     trilha = 'fundamentos-dev/sala/controlando-codigo'    
 
@@ -129,7 +126,7 @@ def main(page:webdriver):
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 52
+    iniciar_em = 0
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -169,9 +166,14 @@ def main(page:webdriver):
                 fullDuration = +fullDuration
                 
                 os.system('cls')
-                gravador.Start(nome,caminho)
+                if gravar:
+                    gravador.Start(nome,caminho)
                 logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index+1} de {qtde_aulas}')
                 print(f'Gravando aula: {nome} | Aula {aula_index+1} de {qtde_aulas}' )
+
+                if enviarMsg:
+                    whatsapp.buscar_contato(contato_msg)
+                    whatsapp.enviar_mensagem(f'Gravando aula: {nome} | Aula {aula_index+1} de {qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}')
                 
                 currentTime = 0
                 prev_duration = 0
@@ -188,42 +190,45 @@ def main(page:webdriver):
                         err_ctrl += 1 
                         if err_ctrl >= 15:                         
                             logs.erro(f"Erro linha 183: A Gravação da aula '{nome}' está travada, será feito um nova tentativa")
-                            gravador.Stop(caminho,show_succ_msg=False)
-                            sleep(2)
-                            gravador.Remove(nome,caminho)
-                            whatsapp.buscar_contato(contato_msg)
-                            whatsapp.enviar_mensagem(f"Erro linha 183: A Gravação da aula '{nome}' está travada, será feito um nova tentativa")
+                            if gravar:
+                                gravador.Stop(caminho,show_succ_msg=False)
+                                sleep(2)
+                                gravador.Remove(nome,caminho)
+                            if enviarMsg:
+                                whatsapp.buscar_contato(contato_msg)
+                                whatsapp.enviar_mensagem(f"Erro linha 183: A Gravação da aula '{nome}' está travada, será feito um nova tentativa")
                             sucesso_gravacao = False
                             break                
 
                 else:
-                    gravador.Stop(caminho)                    
-                    arquivo = rf'{caminho}\{nome.replace('/','').replace('?','')}.mkv'                    
-                    sleep(2)
-                    tamanho_video = obterDuracaoDoArquivo(arquivo)
-                    logs.erro(f'tamanho_video: {tamanho_video}, {type(tamanho_video)}')
-                    logs.erro(f'fullDuration: {fullDuration}, {type(fullDuration)}')
-                    if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
-                        print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                        logs.erro(rf'Erro linha: 196 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                        gravador.Remove(nome,caminho)
-                        whatsapp.buscar_contato(contato_msg)
-                        whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
-                        sucesso_gravacao = False
-                        # aula_index -= 1
-                        continue
+                    if gravar:
+                        gravador.Stop(caminho)                    
+                        arquivo = rf'{caminho}\{nome.replace('/','').replace('?','')}.mkv'                    
+                        sleep(2)
+                        tamanho_video = obterDuracaoDoArquivo(arquivo)
+
+                        if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
+                            print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                            logs.erro(rf'Erro linha: 196 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                            gravador.Remove(nome,caminho)
+                            whatsapp.buscar_contato(contato_msg)
+                            whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
+                            sucesso_gravacao = False
+                            # aula_index -= 1
+                            continue
                     
-                    if sucesso_gravacao:
-                        aula_index += 1
-                        logs.info(f'Gravação da aula: "{nome}" Concluída!')
+                        if sucesso_gravacao:
+                            aula_index += 1
+                            logs.info(f'Gravação da aula: "{nome}" Concluída!')
 
-                        whatsapp.buscar_contato(contato_msg)
-                        whatsapp.enviar_mensagem(f'Gravação da aula: "{nome}" Concluída!')
-                        
-                        sleep(1)
-                        break                   
+                            if enviarMsg:
+                                whatsapp.buscar_contato(contato_msg)
+                                whatsapp.enviar_mensagem(f'Gravação da aula: "{nome}" Concluída!')
+                            
+                            sleep(1)
+                            break                   
 
-                    page.switch_to.default_content()
+                        page.switch_to.default_content()
 
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -242,9 +247,12 @@ def main(page:webdriver):
 if __name__ == "__main__":
     main_url = 'https://escola.formacao.dev/'
     contato_msg = 'Gravação Curso'
-    
-    whatsapp = WhatsAppWeb()
-    whatsapp.iniciar_whatsapp()
+    enviarMsg = True
+    gravar=False
+
+    if enviarMsg:
+        whatsapp = WhatsAppWeb()
+        whatsapp.iniciar_whatsapp()
 
     logs = log.Logger()
     definir_volume_audio(100)    
@@ -253,5 +261,5 @@ if __name__ == "__main__":
 
     logar(page)
     # # Progresso.run(page)
-    main(page)
+    main(page, enviarMsg=enviarMsg, gravar=gravar)
     sleep(2)
