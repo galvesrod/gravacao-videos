@@ -8,3 +8,5 @@ progresso.json
 .\progresso.py
 progresso.py
 whatsapp_profile
+*.lab.py
+data/

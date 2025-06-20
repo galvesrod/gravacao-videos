@@ -141,8 +141,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
             # aula_index += 1
             url = f'{main_url}{trilha}?aula={aula}'
             page.get(url)
-            caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\4 - Controlando Codigo'
-            
+            caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\4 - Controlando Codigo'            
 
             try:            
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
