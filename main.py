@@ -1,5 +1,7 @@
 import os
 import traceback, sys
+from configurarChrome import configurarChrome
+from logar import logar
 import logger as log
 
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
@@ -14,6 +16,7 @@ from gravador import Gravador
 from dotenv import load_dotenv
 import cv2
 
+from progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 
 load_dotenv()
@@ -48,10 +51,6 @@ def definir_volume_audio(percentual):
         print(f"Erro ao definir volume: {e}")
         return False
 
-def obterListaDeAulas(page:webdriver):
-    page.get('http://google.com')
-    pass
-
 def segundos_para_minutos(seg) -> str:
     """
     Converte segundos para formato MM:SS
@@ -69,33 +68,6 @@ def segundos_para_minutos(seg) -> str:
     
     return f'{minutos:02d}:{segundos:02d}'
 
-def configurarChrome(headless:bool=False) -> webdriver:
-    #  Configurar Selenium
-    chrome_options = Options()
-    chrome_options.add_argument("--start-maximized")
-    chrome_options.add_argument('--disable-logging')
-    chrome_options.add_argument("--log-level=3")
-    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    chrome_options.add_experimental_option('useAutomationExtension', False)
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    if headless:
-        chrome_options.add_argument("--headless")  
-    service = Service('chromedriver.exe')  # caminho do chromedriver
-    
-    page = webdriver.Chrome(service=service, options=chrome_options)
-    page.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})") 
-    page.implicitly_wait(30)
-    return page
-
-def logar(page:webdriver):
-    LOGIN_NAME = os.getenv('LOGIN_NAME')
-    PWD = os.getenv('PWD')
-    
-    page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/div[1]/div/input').send_keys(LOGIN_NAME)
-    page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/div[2]/div/input').send_keys(PWD)
-    page.find_element(By.XPATH,'//*[@id="__next"]/section/div[2]/button[1]').click()
-    page.find_element(By.XPATH,'//*[@id="__next"]/div[1]/div[2]/div/div')
-
 def obterDuracaoDoArquivo(video_path):
     try:
         cap = cv2.VideoCapture(video_path)
@@ -109,39 +81,23 @@ def obterDuracaoDoArquivo(video_path):
         print(f"Erro ao processar o vídeo: {e}")
         return None
 
+def criar_diretorio(path:str):
+    if not os.path.exists(path):
+            os.makedirs(path)
+
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     gravador = Gravador() if gravar else None
     page = page
-    trilha = 'fundamentos-dev/sala/controlando-codigo'    
-
-    page.get(f'{main_url}{trilha}')
-    elementos = page.find_elements(By.CSS_SELECTOR, "div[data-lesson-id]")
-    aulas = []
-    for elemento in elementos:
-        id = elemento.get_attribute('data-lesson-id')
-        name = elemento.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').text
-        if name == "":
-            break
-        aulas.append((name,id))  
-
+    lista_aulas = progresso.obter_lista_gravacao()
+    qtde_aulas = len(lista_aulas)
     aula_index = 0
-    qtde_aulas = len(aulas)
-    iniciar_em = 53
-
-    logs.info(f"Coletado lista de {qtde_aulas} para gravar")
-    
-    for nome, aula in aulas:
-        # Avança no loop até aula desejada
-        if (aula_index < iniciar_em):
-            aula_index += 1
-            continue
+    for aula in lista_aulas:
+        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id = aula        
+        criar_diretorio(caminho)
 
         while True:
             sucesso_gravacao = True
-            # aula_index += 1
-            url = f'{main_url}{trilha}?aula={aula}'
-            page.get(url)
-            caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\4 - Controlando Codigo'            
+            page.get(link)
 
             try:            
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
@@ -156,6 +112,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 page.execute_script("document.querySelector('video').pause()")
                 sleep(0.5)
                 page.execute_script("document.querySelector('video').quality = 1080;")
+                page.execute_script("document.querySelector('video').playbackRate = 1")
                 page.execute_script("document.querySelector('video').currentTime = 0;")
                 page.execute_script("document.querySelector('video').muted = false;")
                 sleep(0.5)
@@ -166,13 +123,14 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 
                 os.system('cls')
                 if gravar:
-                    gravador.Start(nome,caminho)
-                logs.info(f'Gravação da aula: {nome} iniciada! | Aula {aula_index+1} de {qtde_aulas}')
-                print(f'Gravando aula: {nome} | Aula {aula_index+1} de {qtde_aulas}' )
+                    gravador.Start(aula,caminho)
+                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {aula_index+1} de {qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
+                logs.info(msg)
+                print(msg)
 
                 if enviarMsg:
                     whatsapp.buscar_contato(contato_msg)
-                    whatsapp.enviar_mensagem(f'Gravando aula: {nome} | Aula {aula_index+1} de {qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}')
+                    whatsapp.enviar_mensagem(msg)
                 
                 currentTime = 0
                 prev_duration = 0
@@ -188,42 +146,44 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     else: # quando o vídeo estiver travado
                         err_ctrl += 1 
                         if err_ctrl >= 15:                         
-                            logs.erro(f"Erro linha 183: A Gravação da aula '{nome}' está travada, será feito um nova tentativa")
+                            logs.erro(f"Erro linha 183: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             if gravar:
                                 gravador.Stop(caminho,show_succ_msg=False)
                                 sleep(2)
-                                gravador.Remove(nome,caminho)
+                                gravador.Remove(aula,caminho)
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f"Erro linha 183: A Gravação da aula '{nome}' está travada, será feito um nova tentativa")
+                                whatsapp.enviar_mensagem(f"Erro linha 183: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             sucesso_gravacao = False
                             break                
 
                 else:
                     if gravar:
                         gravador.Stop(caminho)                    
-                        arquivo = rf'{caminho}\{nome.replace('/','').replace('?','')}.mkv'                    
+                        arquivo = rf'{caminho}\{aula.replace('/','').replace('?','')}.mkv'                    
                         sleep(2)
                         tamanho_video = obterDuracaoDoArquivo(arquivo)
 
                         if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
                             print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                             logs.erro(rf'Erro linha: 196 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                            gravador.Remove(nome,caminho)
+                            gravador.Remove(aula,caminho)
                             whatsapp.buscar_contato(contato_msg)
                             whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
                             sucesso_gravacao = False
-                            # aula_index -= 1
                             continue
                     
                         if sucesso_gravacao:
                             aula_index += 1
-                            logs.info(f'Gravação da aula: "{nome}" Concluída!')
+                            logs.info(f'Gravação da aula: "{aula}" Concluída!')
+                            # Mudar gravado no banco de dados
+                            progresso.concluir_aula(aula_id)
 
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f'Gravação da aula: "{nome}" Concluída!')
+                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
                             
+
                             sleep(1)
                             break                   
 
@@ -244,7 +204,6 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         
     
 if __name__ == "__main__":
-    main_url = 'https://escola.formacao.dev/'
     contato_msg = 'Gravação Curso'
     enviarMsg = False
     gravar=True
@@ -256,8 +215,8 @@ if __name__ == "__main__":
     logs = log.Logger()
     definir_volume_audio(100)    
     page = configurarChrome()
-    page.get(main_url)
-    logar(page)
+    page = logar(page)
+    progresso = Progresso()
     
     # # Progresso.run(page)
     main(page, enviarMsg=enviarMsg, gravar=gravar)
