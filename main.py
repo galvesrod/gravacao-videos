@@ -126,7 +126,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
     aula_index = 0
     qtde_aulas = len(aulas)
-    iniciar_em = 0
+    iniciar_em = 53
 
     logs.info(f"Coletado lista de {qtde_aulas} para gravar")
     
@@ -246,8 +246,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 if __name__ == "__main__":
     main_url = 'https://escola.formacao.dev/'
     contato_msg = 'Gravação Curso'
-    enviarMsg = True
-    gravar=False
+    enviarMsg = False
+    gravar=True
 
     if enviarMsg:
         whatsapp = WhatsAppWeb()
@@ -257,8 +257,8 @@ if __name__ == "__main__":
     definir_volume_audio(100)    
     page = configurarChrome()
     page.get(main_url)
-
     logar(page)
+    
     # # Progresso.run(page)
     main(page, enviarMsg=enviarMsg, gravar=gravar)
     sleep(2)
