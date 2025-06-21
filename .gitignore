@@ -9,4 +9,5 @@ progresso.json
 progresso.py
 whatsapp_profile
 *.lab.py
+*.old.py
 data/
