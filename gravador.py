@@ -26,7 +26,6 @@ class Gravador():
 
             # Iniciar a gravação
             self.cl.start_record()
-            print("Gravação iniciada com sucesso!")
         except Exception as e:
             print(f"Erro ao iniciar gravação: {e}")
     
