@@ -7,9 +7,12 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 
+from configurarChrome import configurarChrome
+from logar import logar
+
 class Progresso:
     def __init__(self):
-        self.conn = sqlite3.connect('./data/aulas.db')        
+        self.conn = sqlite3.connect('./data/aulas.db')
         pass
 
     def obter_formacoes(self) -> list[any]:
@@ -19,7 +22,7 @@ class Progresso:
         rows = cursor.fetchall()
         cursor.close()
         return rows
-    
+
     def obter_trilhas(self) -> list[any]:
         conn = self.conn
         cursor = conn.cursor()
@@ -35,12 +38,12 @@ class Progresso:
         rows = cursor.fetchall()
         cursor.close()
         return rows
-    
+
     def obter_lista_gravacao(self) -> list[any]:
         conn = self.conn
-        cursor = conn.cursor()        
+        cursor = conn.cursor()
         sql = '''
-            select 
+            select
                 f.nome formacao,
                 t.nome trilha,
                 c.nome curso,
@@ -50,8 +53,8 @@ class Progresso:
 	            c.url || '?aula=' || a.aula_id link,
                 a.id aula_id
 
-                
-            from formacoes f 
+
+            from formacoes f
 
             inner join trilhas t on
                 f.id = t.id_formacao
@@ -72,9 +75,9 @@ class Progresso:
         rows = cursor.fetchall()
         cursor.close()
         return rows
-        
 
-                
+
+
     def insert_trilhas(self, trilha):
         conn = self.conn
         cursor = conn.cursor()
@@ -98,7 +101,7 @@ class Progresso:
         cursor.execute(sql, cap)
         conn.commit()
         cursor.close()
-    
+
     def inserir_aulas(self, aula):
         conn = self.conn
         cursor = conn.cursor()
@@ -129,9 +132,9 @@ class Progresso:
                 caminho = f'\\{index} - Trilha {titulo.replace('/','').replace('?','')}'
                 self.insert_trilhas((index,titulo,link,formacao[0],caminho))
                 print(f'Inserido trilha: {index},{titulo},{link},{formacao[0]}')
-                
+
             print(f'Inserido todas as trilhas da formação {formacao[2]}')
-        
+
         trilhas = self.obter_trilhas()
         for trilha in trilhas:
             page.get(trilha[3])
@@ -145,7 +148,7 @@ class Progresso:
 
             print(f'Inserido todos os cursos da trilha {trilha[2]}')
 
-        cursos = self.obter_cursos()  
+        cursos = self.obter_cursos()
         for curso in cursos:
             page.get(curso[3])
             caps = page.find_element(By.CSS_SELECTOR, f'div.flex.bg-zinc-950\\/50.py-\\[4px\\].rounded-lg.pl-\\[4px\\]')
@@ -167,11 +170,18 @@ class Progresso:
                     indice = indice_aula
                     nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').text
                     cap_id = cap_index
-                    
+
                     self.inserir_aulas( (aula_id, indice, nome, cap_id, curso_id) )
                     print(f'Inserido aula: {aula_id},{cap_id},{nome},{curso_id}')
                     indice_aula += 1
-                    
+
             print(f'Inserido todas as aulas do curso {curso[2]}')
         data_terminio = datetime.now()
         print(f'Iniciou em {data_inicio} e finalizou em {data_terminio}')
+
+if __name__ == '__main__':
+    print('Executar Processo de Banco de Dados')
+    page = configurarChrome()
+    page = logar(page)
+    p = Progresso()
+    p.run(page=page)
