@@ -12,6 +12,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
 import cv2
@@ -85,6 +88,13 @@ def criar_diretorio(path:str):
     if not os.path.exists(path):
             os.makedirs(path)
 
+def verificaHaVideo(page:webdriver, xpath:str, timeout=30)-> bool:
+    try:
+        WebDriverWait(driver=page, timeout=timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
+        return True
+    except TimeoutException:
+        return False
+
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     gravador = Gravador() if gravar else None
     page = page
@@ -99,8 +109,20 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
             sucesso_gravacao = True
             page.get(link)
 
-            try:            
+            try:
+                video = verificaHaVideo(page, '//*[@id="player"]',10)
+                if not video:
+                    elemento = page.find_element(By.CSS_SELECTOR,'div[editor-record-id]')
+                    elemento = elemento.get_attribute('outerHTML')
+                    file_name = f'{caminho}/{aula}.html'
+                    with open(file_name, 'w',encoding='utf-8') as arquivo: 
+                        arquivo.write(elemento)
+                    
+                    progresso.concluir_aula(aula_id)
+                    break
+
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
+
                 page.switch_to.frame(frame)
                 sleep(1)
                 page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   
@@ -189,6 +211,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
                         page.switch_to.default_content()
 
+            
+
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
 
@@ -205,8 +229,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     
 if __name__ == "__main__":
     contato_msg = 'Gravação Curso'
-    enviarMsg = False
-    gravar=True
+    enviarMsg = True
+    gravar= True
 
     if enviarMsg:
         whatsapp = WhatsAppWeb()
