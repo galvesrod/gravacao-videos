@@ -102,7 +102,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     qtde_aulas = len(lista_aulas)
     aula_index = 0
     for aula in lista_aulas:
-        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id = aula        
+        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id, indice, qtde_aulas_curso = aula        
         criar_diretorio(caminho)
 
         while True:
@@ -146,7 +146,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 os.system('cls')
                 if gravar:
                     gravador.Start(aula,caminho)
-                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {aula_index+1} de {qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
+                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {aula_index+1} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
                 logs.info(msg)
                 print(msg)
 
@@ -197,13 +197,20 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     
                         if sucesso_gravacao:
                             aula_index += 1
-                            logs.info(f'Gravação da aula: "{aula}" Concluída!')
+                            curso_concluido = indice == qtde_aulas_curso
+                            if curso_concluido:
+                                logs.info(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
+                            else:
+                                logs.info(f'Gravação da aula: "{aula}" Concluída!')
                             # Mudar gravado no banco de dados
                             progresso.concluir_aula(aula_id)
 
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
+                                if curso_concluido:
+                                    whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
+                                else:
+                                    whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
                             
 
                             sleep(1)

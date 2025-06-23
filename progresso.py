@@ -51,7 +51,9 @@ class Progresso:
                 a.nome aula,
                 f.path || t.path || c.path || cap.path,
 	            c.url || '?aula=' || a.aula_id link,
-                a.id aula_id
+                a.id aula_id,
+                a.indice,
+                (select max(a2.indice) qtde_aulas from aulas a2 where a.id_curso = a2.id_curso   ) qtde_aulas
 
 
             from formacoes f
