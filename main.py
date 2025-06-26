@@ -1,9 +1,13 @@
 import os
 import traceback, sys
+import utils.logger as log
+import cv2
+import atexit
+import signal
+
+
 from utils.configurarChrome import configurarChrome
 from logar import logar
-import utils.logger as log
-
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
@@ -17,12 +21,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
-import cv2
-
 from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 
-load_dotenv()
+def cleanup():
+    print("Executando limpeza antes de sair...")
+    status = gravador.Status() if gravador.cl else None
+    if status == 'Gravando':        
+        caminho = gravador.Obter_Caminho_Gravacao_atual()
+        nome = gravador.Obter_Nome_Gravacao_atual()
+        
+        gravador.Stop(caminho,show_succ_msg=False)
+        sleep(2)
+        gravador.Remove(nome,caminho)    
+
+# Registra função para saída normal
+
+# Captura sinais de interrupção (Ctrl+C, etc.)
+def signal_handler(signum, frame):
+    cleanup()
+    sys.exit(0)
+
 
 def definir_volume_audio(percentual):
     """
@@ -96,7 +115,7 @@ def verificaHaVideo(page:webdriver, xpath:str, timeout=30)-> bool:
         return False
 
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
-    gravador = Gravador() if gravar else None
+    
     page = page
     lista_aulas = progresso.obter_lista_gravacao()
     qtde_aulas = len(lista_aulas)
@@ -235,20 +254,29 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         
     
 if __name__ == "__main__":
-    contato_msg = 'Gravação Curso'
-    enviarMsg = True
-    gravar= True
+    load_dotenv()
+    atexit.register(cleanup)
+    signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
+    signal.signal(signal.SIGTERM, signal_handler)  # Terminação
 
-    if enviarMsg:
-        whatsapp = WhatsAppWeb()
-        whatsapp.iniciar_whatsapp()
+    try:
+        contato_msg = 'Gravação Curso'
+        enviarMsg = False
+        gravar= True
+        gravador = Gravador() if gravar else None
 
-    logs = log.Logger()
-    definir_volume_audio(100)    
-    page = configurarChrome()
-    page = logar(page)
-    progresso = Progresso()
-    
-    # # Progresso.run(page)
-    main(page, enviarMsg=enviarMsg, gravar=gravar)
-    sleep(2)
+        if enviarMsg:
+            whatsapp = WhatsAppWeb()
+            whatsapp.iniciar_whatsapp()
+
+        logs = log.Logger()
+        definir_volume_audio(100)    
+        page = configurarChrome()
+        page = logar(page)
+        progresso = Progresso()
+        
+        # # Progresso.run(page)
+        main(page, enviarMsg=enviarMsg, gravar=gravar)
+        sleep(2)
+    except Exception as e:
+        print('erro',e)
