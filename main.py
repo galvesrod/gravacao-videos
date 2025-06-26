@@ -2,7 +2,7 @@ import os
 import traceback, sys
 from configurarChrome import configurarChrome
 from logar import logar
-import logger as log
+import utils.logger as log
 
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
