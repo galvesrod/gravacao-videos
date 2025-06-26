@@ -1,6 +1,6 @@
 import os
 import traceback, sys
-from configurarChrome import configurarChrome
+from utils.configurarChrome import configurarChrome
 from logar import logar
 import utils.logger as log
 
@@ -19,7 +19,7 @@ from gravador import Gravador
 from dotenv import load_dotenv
 import cv2
 
-from progresso import Progresso
+from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 
 load_dotenv()
