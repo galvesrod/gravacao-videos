@@ -7,12 +7,29 @@ class Gravador():
         try:
             self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
         except Exception as e:
+            self.cl = None
             print(e)
         # self.caminho = rf'D:\Usuarios\gabrielalves\Documents\Formação Dev\Fundamentos\Trilha Inicial\Iniciando com Programacao'
 
     def Status(self):       
-        return self.cl.get_record_status()
-       
+        record_status = self.cl.get_record_status()
+        if record_status.output_active:
+            return 'Gravando'
+        if record_status.output_paused:
+            return 'Pausado'
+
+        return 'Parado'
+    
+    def Obter_Caminho_Gravacao_atual(self) -> str:
+        caminho = self.cl.get_record_directory()
+        caminho = caminho.record_directory
+        return f'{caminho}'
+
+    def Obter_Nome_Gravacao_atual(self) -> str:
+        nome = self.cl.get_profile_parameter("Output","FilenameFormatting")
+        nome = nome.parameter_value
+        return f'{nome}'
+
     def Remove(self,name:str, caminho:str):
         name = name.replace('/','').replace('?','')
         file = fr'{caminho}\{name}.mkv'  
@@ -22,7 +39,8 @@ class Gravador():
         try:
             nome_com_data = name.replace('/','').replace('?','')
             self.cl.set_record_directory(caminho)
-            self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)            
+            self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)    
+            
 
             # Iniciar a gravação
             self.cl.start_record()
