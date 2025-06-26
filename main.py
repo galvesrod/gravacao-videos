@@ -112,7 +112,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
             try:
                 video = verificaHaVideo(page, '//*[@id="player"]',10)
                 if not video:
-                    elemento = page.find_element(By.CSS_SELECTOR,'div[editor-record-id]')
+                    elemento = page.find_element(By.CSS_SELECTOR,'div[last-selected-record]') #last-selected-record
                     elemento = elemento.get_attribute('outerHTML')
                     file_name = f'{caminho}/{aula}.html'
                     with open(file_name, 'w',encoding='utf-8') as arquivo: 
