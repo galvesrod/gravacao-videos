@@ -4,9 +4,6 @@ config
 outros_testes
 .env
 logs
-progresso.json
-.\progresso.py
-progresso.py
 whatsapp_profile
 *.lab.py
 *.old.py
