@@ -1,5 +1,6 @@
 import os
 import traceback, sys
+from utils.formataNome import formataNome
 import utils.logger as log
 import cv2
 import atexit
@@ -33,7 +34,7 @@ def cleanup():
         
         gravador.Stop(caminho,show_succ_msg=False)
         sleep(2)
-        gravador.Remove(nome,caminho)    
+        # gravador.Remove(nome,caminho)    
 
 # Registra função para saída normal
 
@@ -200,8 +201,10 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
                 else:
                     if gravar:
-                        gravador.Stop(caminho)                    
-                        arquivo = rf'{caminho}\{aula.replace('/','').replace('?','')}.mkv'                    
+                        gravador.Stop(caminho)
+                        aula = formataNome(aula)   
+                                    
+                        arquivo = rf'{caminho}\{aula}.mkv'                    
                         sleep(2)
                         tamanho_video = obterDuracaoDoArquivo(arquivo)
 
@@ -261,7 +264,7 @@ if __name__ == "__main__":
 
     try:
         contato_msg = 'Gravação Curso'
-        enviarMsg = False
+        enviarMsg = True
         gravar= True
         gravador = Gravador() if gravar else None
 

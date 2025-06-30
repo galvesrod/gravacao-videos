@@ -1,6 +1,8 @@
 from obsws_python import ReqClient
 import os
 
+from utils.formataNome import formataNome
+
 
 class Gravador():
     def __init__(self):
@@ -31,13 +33,14 @@ class Gravador():
         return f'{nome}'
 
     def Remove(self,name:str, caminho:str):
-        name = name.replace('/','').replace('?','')
+        # ignorar: \/:*?"<>|
+        name = formataNome(name)
         file = fr'{caminho}\{name}.mkv'  
         os.remove(file)
 
     def Start(self, name:str,caminho:str):
         try:
-            nome_com_data = name.replace('/','').replace('?','')
+            nome_com_data = formataNome(name)
             self.cl.set_record_directory(caminho)
             self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)    
             
