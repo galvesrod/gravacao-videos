@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 
-def cleanup():
+def cleanup():    
     print("Executando limpeza antes de sair...")
     status = gravador.Status() if gravador.cl else None
     if status == 'Gravando':        
@@ -122,12 +122,16 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     qtde_aulas = len(lista_aulas)
     aula_index = 0
     for aula in lista_aulas:
-        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id, indice, qtde_aulas_curso = aula        
+        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id, indice, qtde_aulas_curso, cd_aula = aula
         criar_diretorio(caminho)
         
         while True:
             sucesso_gravacao = True
             page.get(link)
+            element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
+            element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
+            classes = element.get_attribute('class')
+            assistido = True if "bg-green-500" in classes else False
 
             try:
                 video = verificaHaVideo(page, '//*[@id="player"]',10)
@@ -281,7 +285,6 @@ if __name__ == "__main__":
         page = logar(page)
         progresso = Progresso()
         
-        # # Progresso.run(page)
         main(page, enviarMsg=enviarMsg, gravar=gravar)
         sleep(2)
     except Exception as e:
