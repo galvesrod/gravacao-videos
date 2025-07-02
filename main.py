@@ -124,7 +124,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     for aula in lista_aulas:
         formacao, trilha, curso, captiulo, aula, caminho, link, aula_id, indice, qtde_aulas_curso = aula        
         criar_diretorio(caminho)
-
+        
         while True:
             sucesso_gravacao = True
             page.get(link)
@@ -264,8 +264,11 @@ if __name__ == "__main__":
 
     try:
         contato_msg = 'Gravação Curso'
-        enviarMsg = True
-        gravar= True
+        enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
+        enviarMsg = True if enviarMsg.upper() == 'S' else False
+        
+        gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
+        gravar= True if gravar.upper() == 'S' else False
         gravador = Gravador() if gravar else None
 
         if enviarMsg:
