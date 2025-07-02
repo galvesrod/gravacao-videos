@@ -27,7 +27,7 @@ from whatsappmsg import WhatsAppWeb
 
 def cleanup():    
     print("Executando limpeza antes de sair...")
-    status = gravador.Status() if gravador.cl else None
+    status = gravador.Status() if gravador else None
     if status == 'Gravando':        
         caminho = gravador.Obter_Caminho_Gravacao_atual()
         nome = gravador.Obter_Nome_Gravacao_atual()
@@ -115,6 +115,13 @@ def verificaHaVideo(page:webdriver, xpath:str, timeout=30)-> bool:
     except TimeoutException:
         return False
 
+def obter_se_aula_assistido(page:webdriver, id:str) -> bool:
+    page = page
+    element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{id}"]')
+    element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
+    classes = element.get_attribute('class')
+    return True if "bg-green-500" in classes else False
+
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     
     page = page
@@ -128,10 +135,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         while True:
             sucesso_gravacao = True
             page.get(link)
-            element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
-            element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
-            classes = element.get_attribute('class')
-            assistido = True if "bg-green-500" in classes else False
+            assistido = obter_se_aula_assistido(page, cd_aula)
 
             try:
                 video = verificaHaVideo(page, '//*[@id="player"]',10)
@@ -204,6 +208,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                             break                
 
                 else:
+                    page.execute_script("document.querySelector('video').pause()")
                     if gravar:
                         gravador.Stop(caminho)
                         aula = formataNome(aula)   
@@ -238,13 +243,16 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                                 else:
                                     whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
                             
-
-                            sleep(1)
+                            
+                            page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
+                            page.switch_to.default_content()                     
+                            sleep(0.5)
                             break                   
-
-                        page.switch_to.default_content()
-
-            
+                    else:
+                        page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()                        
+                        page.switch_to.default_content()                     
+                        sleep(0.5)
+                        break
 
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -258,6 +266,12 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 logs.erro(f'Erro ocorreu na linha? {line_number}')
                 logs.erro(f"Exception type: {exc_type.__name__}")
                 logs.erro(f'Exception message: {exc_value}')
+        
+        # Desmarcar video como não assistido
+        if not assistido:
+            element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
+            element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
+            element.click()      
         
     
 if __name__ == "__main__":
@@ -274,6 +288,7 @@ if __name__ == "__main__":
         gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
         gravar= True if gravar.upper() == 'S' else False
         gravador = Gravador() if gravar else None
+        
 
         if enviarMsg:
             whatsapp = WhatsAppWeb()
