@@ -166,7 +166,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 os.system('cls')
                 if gravar:
                     gravador.Start(aula,caminho)
-                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {aula_index+1} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
+                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
                 logs.info(msg)
                 print(msg)
 
