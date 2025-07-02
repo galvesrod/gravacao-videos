@@ -53,7 +53,8 @@ class Progresso:
 	            c.url || '?aula=' || a.aula_id link,
                 a.id aula_id,
                 a.indice,
-                (select max(a2.indice) qtde_aulas from aulas a2 where a.id_curso = a2.id_curso   ) qtde_aulas
+                (select max(a2.indice) qtde_aulas from aulas a2 where a.id_curso = a2.id_curso   ) qtde_aulas,
+                a.aula_id cd_aula
 
 
             from formacoes f
