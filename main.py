@@ -24,17 +24,24 @@ from gravador import Gravador
 from dotenv import load_dotenv
 from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
+cleanup_executado = False
 
-def cleanup():    
+def cleanup():
+    global cleanup_executado
+    if cleanup_executado:
+        return
+    cleanup_executado = True
     print("Executando limpeza antes de sair...")
     status = gravador.Status() if gravador else None
     if status == 'Gravando':        
         caminho = gravador.Obter_Caminho_Gravacao_atual()
-        nome = gravador.Obter_Nome_Gravacao_atual()
-        
+        nome = gravador.Obter_Nome_Gravacao_atual()        
         gravador.Stop(caminho,show_succ_msg=False)
         sleep(2)
-        # gravador.Remove(nome,caminho)    
+        # gravador.Remove(nome,caminho)
+    logs.info('='*50)
+    for aula_assistida in aulas_assistidas:
+        logs.info(aula_assistida)
 
 # Registra função para saída normal
 
@@ -235,7 +242,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                                 logs.info(f'Gravação da aula: "{aula}" Concluída!')
                             # Mudar gravado no banco de dados
                             progresso.concluir_aula(aula_id)
-
+                            aulas_assistidas.append(
+                                f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
+                            )
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
                                 if curso_concluido:
@@ -278,7 +287,8 @@ if __name__ == "__main__":
     load_dotenv()
     atexit.register(cleanup)
     signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
-    signal.signal(signal.SIGTERM, signal_handler)  # Terminação
+    signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
+    aulas_assistidas = []
 
     try:
         contato_msg = 'Gravação Curso'
