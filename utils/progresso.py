@@ -3,7 +3,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException,StaleElementReferenceException
-import pandas as pd
 import sqlite3
 from datetime import datetime
 ################# teste
