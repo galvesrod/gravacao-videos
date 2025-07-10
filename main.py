@@ -1,6 +1,7 @@
 import os
 import traceback, sys
 from utils.formataNome import formataNome
+from utils.lock import criar_lock, remover_lock
 import utils.logger as log
 import cv2
 import atexit
@@ -130,7 +131,8 @@ def obter_se_aula_assistido(page:webdriver, id:str) -> bool:
     return True if "bg-green-500" in classes else False
 
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
-    
+
+
     page = page
     lista_aulas = progresso.obter_lista_gravacao()
     qtde_aulas = len(lista_aulas)
@@ -284,6 +286,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         
     
 if __name__ == "__main__":
+    if not criar_lock():
+        sys.exit(1)
+
     load_dotenv()
     atexit.register(cleanup)
     signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
@@ -313,4 +318,17 @@ if __name__ == "__main__":
         main(page, enviarMsg=enviarMsg, gravar=gravar)
         sleep(2)
     except Exception as e:
-        print('erro',e)
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
+        tb_list = traceback.extract_tb(exc_traceback)
+        last_frame = tb_list[-1]
+        line_number = last_frame.lineno
+
+        print(f'Erro: {e}')
+        logs.erro(f'Erro Linha 208: {e}')
+        logs.erro(f'Erro ocorreu na linha? {line_number}')
+        logs.erro(f"Exception type: {exc_type.__name__}")
+        logs.erro(f'Exception message: {exc_value}')
+    
+    finally:
+        remover_lock()
