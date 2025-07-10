@@ -9,3 +9,4 @@ whatsapp_profile
 *.old.py
 data/
 utils/lock.lock
+start.bat
