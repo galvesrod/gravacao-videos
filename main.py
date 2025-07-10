@@ -25,6 +25,9 @@ from gravador import Gravador
 from dotenv import load_dotenv
 from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
+from dotenv import load_dotenv
+load_dotenv()
+
 cleanup_executado = False
 
 def cleanup():
@@ -297,10 +300,12 @@ if __name__ == "__main__":
 
     try:
         contato_msg = 'Gravação Curso'
-        enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
-        enviarMsg = True if enviarMsg.upper() == 'S' else False
+        enviarMsg = os.getenv('ENVIARMSG')
+        # enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
+        enviarMsg = True if enviarMsg.upper() == 'S' else False        
         
-        gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
+        gravar = os.getenv('GRAVAR')
+        # gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
         gravar= True if gravar.upper() == 'S' else False
         gravador = Gravador() if gravar else None
         
