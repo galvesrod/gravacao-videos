@@ -60,7 +60,7 @@ class WhatsAppWeb:
 
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument("--log-level=3")
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
 
         # Desabilitar som/áudio
         chrome_options.add_argument("--mute-audio")
