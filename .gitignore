@@ -8,3 +8,4 @@ whatsapp_profile
 *.lab.py
 *.old.py
 data/
+utils/lock.lock
