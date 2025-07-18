@@ -1,14 +1,16 @@
 import os
 import traceback, sys
+
+from utils import fazerLogin
 from utils import configurarChrome
 from utils.formataNome import formataNome
 from utils.lock import criar_lock, remover_lock
+from utils.progresso import Progresso
 import utils.logger as log
 import cv2
 import atexit
 import signal
-from sys import platform
-from logar import logar
+# from sys import platform
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
@@ -22,7 +24,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
-from utils.progresso import Progresso
 from whatsappmsg import WhatsAppWeb
 from dotenv import load_dotenv
 load_dotenv()
@@ -320,9 +321,12 @@ if __name__ == "__main__":
             whatsapp.iniciar_whatsapp()
 
         logs = log.Logger()
-        definir_volume_audio(100)    
+        definir_volume_audio(100) 
+        print('325')   
         page = configurarChrome.configurarChrome()
-        page = logar(page)
+        print('327')   
+        page = fazerLogin.fazerLogin(page)
+        print('329')   
         progresso = Progresso()
         
         main(page, enviarMsg=enviarMsg, gravar=gravar)

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def logar(page:webdriver) -> webdriver:
+def fazerLogin(page:webdriver) -> webdriver:
     MAIN_URL = 'https://escola.formacao.dev/'
     LOGIN_NAME = os.getenv('LOGIN_NAME')
     PWD = os.getenv('PWD')

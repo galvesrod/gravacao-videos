@@ -7,8 +7,7 @@ import sqlite3
 from datetime import datetime
 ################# teste
 from utils.configurarChrome import configurarChrome
-from logar import logar
-# from logar import logar
+from utils import fazerLogin
 
 class Progresso:
     def __init__(self):
@@ -188,6 +187,6 @@ class Progresso:
 if __name__ == '__main__':
     print('Executar Processo de Banco de Dados')
     page = configurarChrome(True)
-    page = logar(page)
+    page = fazerLogin(page)
     p = Progresso()
     p.run(page=page)
