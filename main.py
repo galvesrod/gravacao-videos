@@ -1,14 +1,13 @@
 import os
 import traceback, sys
+from utils import configurarChrome
 from utils.formataNome import formataNome
 from utils.lock import criar_lock, remover_lock
 import utils.logger as log
 import cv2
 import atexit
 import signal
-
-
-from utils.configurarChrome import configurarChrome
+from sys import platform
 from logar import logar
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
@@ -141,13 +140,19 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     qtde_aulas = len(lista_aulas)
     aula_index = 0
     for aula in lista_aulas:
-        formacao, trilha, curso, captiulo, aula, caminho, link, aula_id, indice, qtde_aulas_curso, cd_aula = aula
+        formacao, trilha, curso, captiulo, aula, link, aula_id, indice, qtde_aulas_curso, cd_aula, win_path = aula
+        caminho = win_path
+        # if platform.system() == 'Windows':
+        #     caminho = win_path
+        # else:
+        #     caminho = linux_path
         criar_diretorio(caminho)
         
         while True:
             sucesso_gravacao = True
             page.get(link)
-            assistido = obter_se_aula_assistido(page, cd_aula)
+            # assistido = obter_se_aula_assistido(page, cd_aula)
+            assistido = True
 
             try:
                 video = verificaHaVideo(page, '//*[@id="player"]',10)
@@ -316,7 +321,7 @@ if __name__ == "__main__":
 
         logs = log.Logger()
         definir_volume_audio(100)    
-        page = configurarChrome()
+        page = configurarChrome.configurarChrome()
         page = logar(page)
         progresso = Progresso()
         

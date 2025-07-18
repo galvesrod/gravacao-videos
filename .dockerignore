@@ -1,0 +1,42 @@
+# Ignorar arquivos desnecessários no build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Arquivos específicos do projeto
+gravacoes/
+logs/
+database/
+whatsapp_profile/
+*.mkv
+*.mp4
+*.avi
+
+# Arquivos de configuração local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db

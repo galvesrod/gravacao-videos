@@ -8,6 +8,7 @@ from datetime import datetime
 ################# teste
 from utils.configurarChrome import configurarChrome
 from logar import logar
+# from logar import logar
 
 class Progresso:
     def __init__(self):
@@ -48,14 +49,13 @@ class Progresso:
                 c.nome curso,
                 cap.nome capitulo,
                 a.nome aula,
-                f.path || t.path || c.path || cap.path,
 	            c.url || '?aula=' || a.aula_id link,
                 a.id aula_id,
                 a.indice,
                 (select max(a2.indice) qtde_aulas from aulas a2 where a.id_curso = a2.id_curso   ) qtde_aulas,
-                a.aula_id cd_aula
-
-
+                a.aula_id cd_aula,
+                f.path || t.path || c.path || cap.path win_path
+                /*replace(f.path_linux || t.path || c.path || cap.path,'\\','/') linux_path*/
             from formacoes f
 
             inner join trilhas t on
@@ -77,7 +77,6 @@ class Progresso:
         rows = cursor.fetchall()
         cursor.close()
         return rows
-
 
 
     def insert_trilhas(self, trilha):
@@ -170,20 +169,25 @@ class Progresso:
                 for aula_index, aula in enumerate(aulas, start=1):
                     aula_id = aula.get_attribute("data-lesson-id")
                     indice = indice_aula
-                    nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').text
+                    # nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').text
+                    nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').get_attribute('textContent')
+                    if nome == '' or nome is None:
+                        print(nome)
                     cap_id = cap_index
+                    
 
                     self.inserir_aulas( (aula_id, indice, nome, cap_id, curso_id) )
                     print(f'Inserido aula: {aula_id},{cap_id},{nome},{curso_id}')
                     indice_aula += 1
 
             print(f'Inserido todas as aulas do curso {curso[2]}')
+            
         data_terminio = datetime.now()
         print(f'Iniciou em {data_inicio} e finalizou em {data_terminio}')
 
 if __name__ == '__main__':
     print('Executar Processo de Banco de Dados')
-    page = configurarChrome()
+    page = configurarChrome(True)
     page = logar(page)
     p = Progresso()
     p.run(page=page)
