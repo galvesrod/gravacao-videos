@@ -322,11 +322,8 @@ if __name__ == "__main__":
 
         logs = log.Logger()
         definir_volume_audio(100) 
-        print('325')   
         page = configurarChrome.configurarChrome()
-        print('327')   
         page = fazerLogin.fazerLogin(page)
-        print('329')   
         progresso = Progresso()
         
         main(page, enviarMsg=enviarMsg, gravar=gravar)
