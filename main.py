@@ -117,7 +117,7 @@ def obterDuracaoDoArquivo(video_path):
 
 def criar_diretorio(path:str):
     if not os.path.exists(path):
-            os.makedirs(path)
+        os.makedirs(path)
 
 def verificaHaVideo(page:webdriver, xpath:str, timeout=30)-> bool:
     try:
@@ -134,15 +134,13 @@ def obter_se_aula_assistido(page:webdriver, id:str) -> bool:
     return True if "bg-green-500" in classes else False
 
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
-
-
     page = page
     lista_aulas = progresso.obter_lista_gravacao()
     qtde_aulas = len(lista_aulas)
     aula_index = 0
     for aula in lista_aulas:
         formacao, trilha, curso, captiulo, aula, link, aula_id, indice, qtde_aulas_curso, cd_aula, win_path = aula
-        caminho = win_path
+        caminho = formataNome(win_path, 'DIR')
         # if platform.system() == 'Windows':
         #     caminho = win_path
         # else:
