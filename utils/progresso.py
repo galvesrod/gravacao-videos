@@ -6,8 +6,8 @@ from selenium.common.exceptions import TimeoutException, ElementClickIntercepted
 import sqlite3
 from datetime import datetime
 ################# teste
-from utils.configurarChrome import configurarChrome
-from utils import fazerLogin
+from configurarChrome import configurarChrome
+from fazerLogin import fazerLogin
 
 class Progresso:
     def __init__(self):
