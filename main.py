@@ -47,13 +47,26 @@ def cleanup():
     for aula_assistida in aulas_assistidas:
         logs.info(aula_assistida)
 
+
+def interromperGravacao():    
+    status = gravador.Status() if gravador else None
+    if status == 'Gravando':        
+        caminho = gravador.Obter_Caminho_Gravacao_atual()
+        nome = gravador.Obter_Nome_Gravacao_atual()        
+        gravador.Stop(caminho,show_succ_msg=False)
+        sleep(2)
+        gravador.Remove(nome,caminho)
+        logs.info('='*50)
+        logs.info(f'Aula {nome} excluída')
+    
+
+
 # Registra função para saída normal
 
 # Captura sinais de interrupção (Ctrl+C, etc.)
 def signal_handler(signum, frame):
     cleanup()
     sys.exit(0)
-
 
 def definir_volume_audio(percentual):
     """
@@ -274,16 +287,16 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-
                 tb_list = traceback.extract_tb(exc_traceback)
                 last_frame = tb_list[-1]
                 line_number = last_frame.lineno
 
-                print(f'Erro: {e}')
-                logs.erro(f'Erro Linha 208: {e}')
+                logs.erro('Exceção lançada. O Código será reiniciado!')
                 logs.erro(f'Erro ocorreu na linha? {line_number}')
                 logs.erro(f"Exception type: {exc_type.__name__}")
                 logs.erro(f'Exception message: {exc_value}')
+                interromperGravacao()
+                continue
         
         # Desmarcar video como não assistido
         if not assistido:
