@@ -6,8 +6,6 @@ from selenium.common.exceptions import TimeoutException, ElementClickIntercepted
 import sqlite3
 from datetime import datetime
 ################# teste
-from configurarChrome import configurarChrome
-from fazerLogin import fazerLogin
 
 class Progresso:
     def __init__(self):
@@ -185,8 +183,10 @@ class Progresso:
         print(f'Iniciou em {data_inicio} e finalizou em {data_terminio}')
 
 if __name__ == '__main__':
+    import ConfigurarChrome
+    from fazerLogin import fazerLogin
     print('Executar Processo de Banco de Dados')
-    page = configurarChrome(True)
+    page = ConfigurarChrome.configurarChrome(True)
     page = fazerLogin(page)
     p = Progresso()
     p.run(page=page)
