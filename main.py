@@ -2,7 +2,7 @@ import os
 import traceback, sys
 
 from utils import fazerLogin
-from utils import configurarChrome
+from utils import ConfigurarChrome
 from utils.formataNome import formataNome
 from utils.lock import criar_lock, remover_lock
 from utils.progresso import Progresso
@@ -181,29 +181,29 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
 
                 page.switch_to.frame(frame)
-                sleep(1)
-                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   
+                sleep(0.5)
+                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   # Clica em maximizar                
                 
                 print('========================================================================')
                 logs.info('========================================================================')
 
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').pause()")
+                page.execute_script("document.querySelector('video').pause()") # pausa o video
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').quality = 1080;")
-                page.execute_script("document.querySelector('video').playbackRate = 1")
-                page.execute_script("document.querySelector('video').currentTime = 0;")
-                page.execute_script("document.querySelector('video').muted = false;")
+                page.execute_script("document.querySelector('video').quality = 1080;") # Garante qualidade de 1080p
+                page.execute_script("document.querySelector('video').playbackRate = 1") # Garante que video será rodado em velocidade normal
+                page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo
+                page.execute_script("document.querySelector('video').muted = false;") # Garante que video não está mudo
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').play()")
-                sleep(0.5)
-                fullDuration = page.execute_script("return document.querySelector('video').duration")        
+                fullDuration = page.execute_script("return document.querySelector('video').duration") # obtem a duaração do video
                 fullDuration = +fullDuration
                 
-                os.system('cls')
                 if gravar:
-                    gravador.Start(aula,caminho)
-                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'
+                    gravador.Start(aula,caminho) # inicia a gravação
+                
+                msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'                
+                page.execute_script("document.querySelector('video').play()") # Inicia o vídeo
+                os.system('cls')
                 logs.info(msg)
                 print(msg)
 
@@ -215,7 +215,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 prev_duration = 0
                 err_ctrl = 0
                 while currentTime < fullDuration:
-                    currentTime = page.execute_script("return document.querySelector('video').currentTime;")
+                    currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
                     print(f'\r{segundos_para_minutos(currentTime)} de { segundos_para_minutos(fullDuration)}', end='', flush=True) #imprime o tempo
 
                     if prev_duration != currentTime: # se a duração atual for diferente da anterior, video em andamento
@@ -225,30 +225,30 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     else: # quando o vídeo estiver travado
                         err_ctrl += 1 
                         if err_ctrl >= 15:                         
-                            logs.erro(f"Erro linha 183: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
+                            logs.erro(f"Erro linha 228: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             if gravar:
                                 gravador.Stop(caminho,show_succ_msg=False)
                                 sleep(2)
                                 gravador.Remove(aula,caminho)
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f"Erro linha 183: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
+                                whatsapp.enviar_mensagem(f"Erro linha 235: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             sucesso_gravacao = False
                             break                
 
-                else:
-                    page.execute_script("document.querySelector('video').pause()")
+                else: # Fim do vídeo
+                    page.execute_script("document.querySelector('video').pause()") # parar o video
                     if gravar:
-                        gravador.Stop(caminho)
-                        aula = formataNome(aula)   
+                        gravador.Stop(caminho) # Parar o gravador
+                        aula = formataNome(aula) # formata o nome da aula
                                     
                         arquivo = rf'{caminho}\{aula}.mkv'                    
                         sleep(2)
                         tamanho_video = obterDuracaoDoArquivo(arquivo)
 
-                        if tamanho_video -1 > fullDuration or tamanho_video +1 < fullDuration:
+                        if tamanho_video -2 > fullDuration or tamanho_video +2 < fullDuration:
                             print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                            logs.erro(rf'Erro linha: 196 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                            logs.erro(rf'Erro linha: 251 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                             gravador.Remove(aula,caminho)
                             whatsapp.buscar_contato(contato_msg)
                             whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
@@ -290,11 +290,12 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 tb_list = traceback.extract_tb(exc_traceback)
                 last_frame = tb_list[-1]
                 line_number = last_frame.lineno
-
+                logs.info('='*50)
                 logs.erro('Exceção lançada. O Código será reiniciado!')
-                logs.erro(f'Erro ocorreu na linha? {line_number}')
+                logs.erro(f'Erro ocorreu na linha: {line_number}')
                 logs.erro(f"Exception type: {exc_type.__name__}")
                 logs.erro(f'Exception message: {exc_value}')
+                logs.info('='*50)
                 interromperGravacao()
                 continue
         
@@ -302,7 +303,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         if not assistido:
             element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
             element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
-            element.click()      
+            # element.click() #ver problema
         
     
 if __name__ == "__main__":
@@ -324,8 +325,7 @@ if __name__ == "__main__":
         gravar = os.getenv('GRAVAR')
         # gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
         gravar= True if gravar.upper() == 'S' else False
-        gravador = Gravador() if gravar else None
-        
+        gravador = Gravador() if gravar else None        
 
         if enviarMsg:
             whatsapp = WhatsAppWeb()
@@ -333,7 +333,8 @@ if __name__ == "__main__":
 
         logs = log.Logger()
         definir_volume_audio(100) 
-        page = configurarChrome.configurarChrome()
+
+        page = ConfigurarChrome.configurarChrome()
         page = fazerLogin.fazerLogin(page)
         progresso = Progresso()
         
