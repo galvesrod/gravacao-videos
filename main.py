@@ -361,7 +361,7 @@ if __name__ == "__main__":
             if gravar:
                 gravador = Gravador() if gravar else None
                 if gravador.cl is None:
-                    exit()
+                    continue
 
             if enviarMsg:
                 whatsapp = WhatsAppWeb()
@@ -375,7 +375,7 @@ if __name__ == "__main__":
             progresso = Progresso()
             
             main(page, enviarMsg=enviarMsg, gravar=gravar)
-            print('Exit')
+            
             sleep(2)
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
