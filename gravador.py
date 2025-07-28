@@ -38,7 +38,7 @@ class Gravador():
         file = fr'{caminho}\{name}.mkv'  
         os.remove(file)
 
-    def Start(self, name:str,caminho:str):
+    def Start(self, name:str,caminho:str)->bool:
         try:
             nome_com_data = formataNome(name)
             self.cl.set_record_directory(caminho)
@@ -47,14 +47,18 @@ class Gravador():
 
             # Iniciar a gravação
             self.cl.start_record()
+            return True
         except Exception as e:
             print(f"Erro ao iniciar gravação: {e}")
+            return False
     
-    def Stop(self,caminho:str, show_succ_msg:bool=True):
+    def Stop(self,caminho:str, show_succ_msg:bool=True)->bool:
         try:            
             self.cl.stop_record()
             if show_succ_msg:
                 print(f"\nGravação Finalizado com sucesso.\nGravado em: {caminho}")
+            return True
         except Exception as e:
             print(f"Erro ao finalizar gravação: {e}")
+            return False
         
