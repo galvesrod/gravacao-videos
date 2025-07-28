@@ -48,6 +48,33 @@ def cleanup():
         logs.info(aula_assistida)
 
 
+def abrir_obs():
+    import psutil
+    import subprocess
+    for processo in psutil.process_iter(['name', 'exe']):
+        try:
+            if processo.info['name'] and 'obs' in processo.info['name'].lower():
+                return
+            if processo.info['exe'] and 'obs' in processo.info['exe'].lower():
+                return
+        except(psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    try:
+        obs_path = rf"C:\Program Files\obs-studio\bin\64bit\obs64.exe"
+        diretorio_trabalho = rf"C:\Program Files\obs-studio\bin\64bit"
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = 2
+
+        if os.path.exists(obs_path):
+            subprocess.Popen([obs_path], cwd=diretorio_trabalho, startupinfo=startupinfo )
+        else:
+            subprocess.Popen(['obs64'])
+    except:
+        print("Erro ao abrir o OBS")
+
+
 def interromperGravacao():    
     status = gravador.Status() if gravador else None
     if status == 'Gravando':        
@@ -59,7 +86,6 @@ def interromperGravacao():
         logs.info('='*50)
         logs.info(f'Aula {nome} excluída')
     
-
 
 # Registra função para saída normal
 
@@ -199,7 +225,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 fullDuration = +fullDuration
                 
                 if gravar:
-                    gravador.Start(aula,caminho) # inicia a gravação
+                    status = gravador.Start(aula,caminho) # inicia a gravação
+                    if not status:
+                        raise Exception("Vídeo não iniciado")
                 
                 msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'                
                 page.execute_script("document.querySelector('video').play()") # Inicia o vídeo
@@ -227,7 +255,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         if err_ctrl >= 15:                         
                             logs.erro(f"Erro linha 228: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             if gravar:
-                                gravador.Stop(caminho,show_succ_msg=False)
+                                status = gravador.Stop(caminho,show_succ_msg=False)
+                                if not status:
+                                    raise Exception("Vídeo não finalizado")
                                 sleep(2)
                                 gravador.Remove(aula,caminho)
                             if enviarMsg:
@@ -239,7 +269,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 else: # Fim do vídeo
                     page.execute_script("document.querySelector('video').pause()") # parar o video
                     if gravar:
-                        gravador.Stop(caminho) # Parar o gravador
+                        status = gravador.Stop(caminho) # Parar o gravador
+                        if not status:
+                            raise Exception("Vídeo não finalizado")
                         aula = formataNome(aula) # formata o nome da aula
                                     
                         arquivo = rf'{caminho}\{aula}.mkv'                    
@@ -307,51 +339,56 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         
     
 if __name__ == "__main__":
-    if not criar_lock():
-        sys.exit(1)
+    while True:
+        if not criar_lock():
+            sys.exit(1)
 
-    load_dotenv()
-    atexit.register(cleanup)
-    signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
-    signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
-    aulas_assistidas = []
+        load_dotenv()
+        atexit.register(cleanup)
+        signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
+        signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
+        aulas_assistidas = []
+        try:
+            abrir_obs()
+            contato_msg = 'Gravação Curso'
+            enviarMsg = os.getenv('ENVIARMSG')
+            # enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
+            enviarMsg = True if enviarMsg.upper() == 'S' else False        
+            
+            gravar = os.getenv('GRAVAR')
+            # gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
+            gravar= True if gravar.upper() == 'S' else False
+            if gravar:
+                gravador = Gravador() if gravar else None
+                if gravador.cl is None:
+                    exit()
 
-    try:
-        contato_msg = 'Gravação Curso'
-        enviarMsg = os.getenv('ENVIARMSG')
-        # enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
-        enviarMsg = True if enviarMsg.upper() == 'S' else False        
+            if enviarMsg:
+                whatsapp = WhatsAppWeb()
+                whatsapp.iniciar_whatsapp()
+
+            logs = log.Logger()
+            definir_volume_audio(100) 
+
+            page = ConfigurarChrome.configurarChrome()
+            page = fazerLogin.fazerLogin(page)
+            progresso = Progresso()
+            
+            main(page, enviarMsg=enviarMsg, gravar=gravar)
+            print('Exit')
+            sleep(2)
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+
+            tb_list = traceback.extract_tb(exc_traceback)
+            last_frame = tb_list[-1]
+            line_number = last_frame.lineno
+
+            print(f'Erro: {e}')
+            logs.erro(f'Erro Linha 208: {e}')
+            logs.erro(f'Erro ocorreu na linha? {line_number}')
+            logs.erro(f"Exception type: {exc_type.__name__}")
+            logs.erro(f'Exception message: {exc_value}')
         
-        gravar = os.getenv('GRAVAR')
-        # gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
-        gravar= True if gravar.upper() == 'S' else False
-        gravador = Gravador() if gravar else None        
-
-        if enviarMsg:
-            whatsapp = WhatsAppWeb()
-            whatsapp.iniciar_whatsapp()
-
-        logs = log.Logger()
-        definir_volume_audio(100) 
-
-        page = ConfigurarChrome.configurarChrome()
-        page = fazerLogin.fazerLogin(page)
-        progresso = Progresso()
-        
-        main(page, enviarMsg=enviarMsg, gravar=gravar)
-        sleep(2)
-    except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-
-        tb_list = traceback.extract_tb(exc_traceback)
-        last_frame = tb_list[-1]
-        line_number = last_frame.lineno
-
-        print(f'Erro: {e}')
-        logs.erro(f'Erro Linha 208: {e}')
-        logs.erro(f'Erro ocorreu na linha? {line_number}')
-        logs.erro(f"Exception type: {exc_type.__name__}")
-        logs.erro(f'Exception message: {exc_value}')
-    
-    finally:
-        remover_lock()
+        finally:
+            remover_lock()
