@@ -68,9 +68,9 @@ def abrir_obs():
         startupinfo.wShowWindow = 2
 
         if os.path.exists(obs_path):
-            subprocess.Popen([obs_path], cwd=diretorio_trabalho, startupinfo=startupinfo )
+            subprocess.Popen([obs_path,"--disable-shutdown-check"], cwd=diretorio_trabalho, startupinfo=startupinfo )
         else:
-            subprocess.Popen(['obs64'])
+            subprocess.Popen(['obs64',"--disable-shutdown-check"])
     except:
         print("Erro ao abrir o OBS")
 
