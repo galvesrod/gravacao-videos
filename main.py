@@ -47,7 +47,6 @@ def cleanup():
     for aula_assistida in aulas_assistidas:
         logs.info(aula_assistida)
 
-
 def abrir_obs():
     import psutil
     import subprocess
@@ -74,7 +73,6 @@ def abrir_obs():
     except:
         print("Erro ao abrir o OBS")
 
-
 def interromperGravacao():    
     status = gravador.Status() if gravador else None
     if status == 'Gravando':        
@@ -85,8 +83,6 @@ def interromperGravacao():
         gravador.Remove(nome,caminho)
         logs.info('='*50)
         logs.info(f'Aula {nome} excluída')
-    
-
 # Registra função para saída normal
 
 # Captura sinais de interrupção (Ctrl+C, etc.)
@@ -177,16 +173,20 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     lista_aulas = progresso.obter_lista_gravacao()
     qtde_aulas = len(lista_aulas)
     aula_index = 0
+    tentativas = 0
     for aula in lista_aulas:
         formacao, trilha, curso, captiulo, aula, link, aula_id, indice, qtde_aulas_curso, cd_aula, win_path = aula
+        print(aula)
         caminho = formataNome(win_path, 'DIR')
         # if platform.system() == 'Windows':
         #     caminho = win_path
         # else:
         #     caminho = linux_path
         criar_diretorio(caminho)
-        
         while True:
+            if tentativas >= 3:
+                logs.erro('Foram feitas três tentativas sem sucesso de gravação. O programa será reiniciado')
+                raise Exception ('Foram feitas três tentativas sem sucesso de gravação. O programa será reiniciado')
             sucesso_gravacao = True
             page.get(link)
             # assistido = obter_se_aula_assistido(page, cd_aula)
@@ -223,16 +223,17 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 sleep(0.5)
                 fullDuration = page.execute_script("return document.querySelector('video').duration") # obtem a duaração do video
                 fullDuration = +fullDuration
+
                 
                 if gravar:
                     status = gravador.Start(aula,caminho) # inicia a gravação
                     if not status:
-                        raise Exception("Vídeo não iniciado")
+                        raise Exception("Gravador nao conseguiu iniciar o vídeo")
                 
                 msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'                
                 page.execute_script("document.querySelector('video').play()") # Inicia o vídeo
-                os.system('cls')
                 logs.info(msg)
+                os.system('cls')
                 print(msg)
 
                 if enviarMsg:
@@ -253,25 +254,29 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     else: # quando o vídeo estiver travado
                         err_ctrl += 1 
                         if err_ctrl >= 15:                         
-                            logs.erro(f"Erro linha 228: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
+                            logs.erro(f"Erro linha 257: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             if gravar:
                                 status = gravador.Stop(caminho,show_succ_msg=False)
                                 if not status:
-                                    raise Exception("Vídeo não finalizado")
+                                    raise Exception("Gravador não conseguiu finalizar o vídeo.")
                                 sleep(2)
                                 gravador.Remove(aula,caminho)
                             if enviarMsg:
                                 whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f"Erro linha 235: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
+                                whatsapp.enviar_mensagem(f"Erro linha 266: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
                             sucesso_gravacao = False
-                            break                
+                            tentativas += 1
+                            break
+                        sleep(0.3)
 
                 else: # Fim do vídeo
                     page.execute_script("document.querySelector('video').pause()") # parar o video
                     if gravar:
                         status = gravador.Stop(caminho) # Parar o gravador
                         if not status:
-                            raise Exception("Vídeo não finalizado")
+                            sucesso_gravacao = False
+                            tentativas += 1
+                            raise Exception("Gravador não conseguiu finalizar o vídeo.")
                         aula = formataNome(aula) # formata o nome da aula
                                     
                         arquivo = rf'{caminho}\{aula}.mkv'                    
@@ -280,7 +285,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
                         if tamanho_video -2 > fullDuration or tamanho_video +2 < fullDuration:
                             print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                            logs.erro(rf'Erro linha: 251 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                            logs.erro(rf'Erro linha: 288 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                             gravador.Remove(aula,caminho)
                             whatsapp.buscar_contato(contato_msg)
                             whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
@@ -306,15 +311,25 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                                 else:
                                     whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
                             
+                            try:
+                                # Minimiza a tela
+                                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
+                            except:
+                                pass
                             
-                            page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
                             page.switch_to.default_content()                     
                             sleep(0.5)
-                            break                   
+                            tentativas = 0
+                            break
                     else:
-                        page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()                        
+                        try:
+                            # Minimiza a tela
+                            page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
+                        except:
+                            pass           
                         page.switch_to.default_content()                     
                         sleep(0.5)
+                        tentativas = 0
                         break
 
             except Exception as e:
@@ -331,11 +346,11 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 interromperGravacao()
                 continue
         
-        # Desmarcar video como não assistido
-        if not assistido:
-            element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
-            element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
-            # element.click() #ver problema
+        # # Desmarcar video como não assistido
+        # if not assistido:
+        #     element = page.find_element(By.CSS_SELECTOR, f'div[data-lesson-id="{cd_aula}"]')
+        #     element = element.find_element(By.CSS_SELECTOR,'.flex.justify-center.items-center.rounded-full')
+        #     # element.click() #ver problema
         
     
 if __name__ == "__main__":
@@ -352,11 +367,9 @@ if __name__ == "__main__":
             abrir_obs()
             contato_msg = 'Gravação Curso'
             enviarMsg = os.getenv('ENVIARMSG')
-            # enviarMsg = input("Deseja enviar msg via Whatsapp? (S/n) ") or 'S'        
             enviarMsg = True if enviarMsg.upper() == 'S' else False        
             
             gravar = os.getenv('GRAVAR')
-            # gravar = input("Deseja realizar a gravação das aulas? (S/n) ") or 'S'
             gravar= True if gravar.upper() == 'S' else False
             if gravar:
                 gravador = Gravador() if gravar else None
@@ -372,10 +385,9 @@ if __name__ == "__main__":
 
             page = ConfigurarChrome.configurarChrome()
             page = fazerLogin.fazerLogin(page)
-            progresso = Progresso()
-            
-            main(page, enviarMsg=enviarMsg, gravar=gravar)
-            
+            progresso = Progresso()            
+            main(page, enviarMsg=enviarMsg, gravar=gravar)    
+            page.close()
             sleep(2)
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -385,7 +397,6 @@ if __name__ == "__main__":
             line_number = last_frame.lineno
 
             print(f'Erro: {e}')
-            logs.erro(f'Erro Linha 208: {e}')
             logs.erro(f'Erro ocorreu na linha? {line_number}')
             logs.erro(f"Exception type: {exc_type.__name__}")
             logs.erro(f'Exception message: {exc_value}')
