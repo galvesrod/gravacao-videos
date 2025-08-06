@@ -297,8 +297,10 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                                 logs.info(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
                             else:
                                 logs.info(f'Gravação da aula: "{aula}" Concluída!')
+                            
                             # Mudar gravado no banco de dados
-                            progresso.concluir_aula(aula_id)
+                            # progresso.concluir_aula(aula_id)
+                            
                             aulas_assistidas.append(
                                 f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
                             )
@@ -353,8 +355,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     
 if __name__ == "__main__":
     while True:
-        if not criar_lock():
-            sys.exit(1)
+        # if not criar_lock():
+        #     sys.exit(1)
 
         load_dotenv()
         atexit.register(cleanup)
@@ -381,11 +383,10 @@ if __name__ == "__main__":
             logs = log.Logger()
             definir_volume_audio(100) 
 
-            page = ConfigurarChrome.configurarChrome()
+            page = ConfigurarChrome.configurarChrome(headless=False, muted=True)
             page = fazerLogin.fazerLogin(page)
             progresso = Progresso()            
             main(page, enviarMsg=enviarMsg, gravar=gravar)    
-            page.close()
             sleep(2)
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -400,4 +401,6 @@ if __name__ == "__main__":
             logs.erro(f'Exception message: {exc_value}')
         
         finally:
+            if page:
+                page.close()
             remover_lock()
