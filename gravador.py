@@ -7,7 +7,7 @@ from utils.formataNome import formataNome
 class Gravador():
     def __init__(self):
         try:
-            self.cl = ReqClient(host='localhost', port=4455, password='OdHZpnPs0COOYJTH')
+            self.cl = ReqClient(host='localhost', port=4455, password='QpYakWZk4OXZk7Yf')
         except Exception as e:
             self.cl = None
             print(e)
