@@ -199,7 +199,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     with open(file_name, 'w',encoding='utf-8') as arquivo: 
                         arquivo.write(elemento)
                     
-                    progresso.concluir_aula(aula_id)
+                    # progresso.concluir_aula(aula_id)
                     break
 
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
@@ -216,9 +216,16 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 sleep(0.5)
                 page.execute_script("document.querySelector('video').quality = 1080;") # Garante qualidade de 1080p
                 page.execute_script("document.querySelector('video').playbackRate = 1") # Garante que video será rodado em velocidade normal
-                page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo
                 page.execute_script("document.querySelector('video').muted = false;") # Garante que video não está mudo
                 sleep(0.5)
+                page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo                
+                currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
+                while currentTime != 0: 
+                    logs.erro("Tentando iniciar o video do zero")
+                    page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo
+                    currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video                    
+
+
                 fullDuration = page.execute_script("return document.querySelector('video').duration") # obtem a duaração do video
                 fullDuration = +fullDuration
 
@@ -241,96 +248,107 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 currentTime = 0
                 prev_duration = 0
                 err_ctrl = 0
-                while currentTime < fullDuration:
+                currentUrl = newUrl = page.current_url
+
+                while True:
+                    newUrl = page.current_url # Atualiza a pagina atual
+                    if currentUrl != newUrl:
+                        logs.erro('Pagina atualizada')
+                        break
+
+                    if currentTime + 0.5 >= fullDuration:
+                        logs.erro('Fim do Vídeo')
+                        break
+
                     currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
                     print(f'\r{segundos_para_minutos(currentTime)} de { segundos_para_minutos(fullDuration)}', end='', flush=True) #imprime o tempo
 
                     if prev_duration != currentTime: # se a duração atual for diferente da anterior, video em andamento
                         prev_duration = currentTime # atualiza a duração anterior
                         err_ctrl = 0 # limpa o contador de erro
+                        continue
+                    # fullDuration = 212.033333
+                    # currentTime = 211.975864
+                    # prev_duration = 211.975864
+
+                    # identifica video travado
+                    err_ctrl += 1 
+                    if err_ctrl >= 15:
+                        logs.erro(f"Erro linha 257: A Gravação da aula '{aula}' está travada, será feito um nova tentativa - currentTime:{currentTime} | prev_duration: {prev_duration}")
                         
-                    else: # quando o vídeo estiver travado
-                        err_ctrl += 1 
-                        if err_ctrl >= 15:                         
-                            logs.erro(f"Erro linha 257: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
-                            if gravar:
-                                status = gravador.Stop(caminho,show_succ_msg=False)
-                                if not status:
-                                    raise Exception("Gravador não conseguiu finalizar o vídeo.")
-                                sleep(2)
-                                gravador.Remove(aula,caminho)
-                            if enviarMsg:
-                                whatsapp.buscar_contato(contato_msg)
-                                whatsapp.enviar_mensagem(f"Erro linha 266: A Gravação da aula '{aula}' está travada, será feito um nova tentativa")
-                            sucesso_gravacao = False
-                            tentativas += 1
-                            break
+                        if gravar:
+                            status = gravador.Stop(caminho,show_succ_msg=False)
+                            if not status:
+                                raise Exception("Gravador não conseguiu finalizar o vídeo.")
+                            sleep(2)
+                            gravador.Remove(aula,caminho)
+                        
                         sleep(0.3)
 
-                else: # Fim do vídeo
-                    page.execute_script("document.querySelector('video').pause()") # parar o video
-                    if gravar:
-                        status = gravador.Stop(caminho) # Parar o gravador
-                        if not status:
-                            sucesso_gravacao = False
-                            tentativas += 1
-                            raise Exception("Gravador não conseguiu finalizar o vídeo.")
-                        aula = formataNome(aula) # formata o nome da aula
+                # Fim do vídeo
+                page.execute_script("document.querySelector('video').pause()") # parar o video
+                if gravar:
+                    status = gravador.Stop(caminho) # Parar o gravador
+                    if not status:
+                        sucesso_gravacao = False
+                        tentativas += 1
+                        raise Exception("Gravador não conseguiu finalizar o vídeo.")
+                    aula = formataNome(aula) # formata o nome da aula
                                     
-                        arquivo = rf'{caminho}\{aula}.mkv'                    
-                        sleep(2)
-                        tamanho_video = obterDuracaoDoArquivo(arquivo)
+                    arquivo = rf'{caminho}\{aula}.mkv'                    
+                    sleep(2)
 
-                        if tamanho_video -2 > fullDuration or tamanho_video +2 < fullDuration:
-                            print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                            logs.erro(rf'Erro linha: 288 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                            gravador.Remove(aula,caminho)
+                    tamanho_video = obterDuracaoDoArquivo(arquivo)
+                    if tamanho_video -2 > fullDuration or tamanho_video +2 < fullDuration:
+                        print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                        logs.erro(rf'Erro linha: 288 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
+                        gravador.Remove(aula,caminho)
+                        whatsapp.buscar_contato(contato_msg)
+                        whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
+                        sucesso_gravacao = False
+                        continue
+                
+                    if sucesso_gravacao:
+                        aula_index += 1
+                        curso_concluido = indice == qtde_aulas_curso
+                        if curso_concluido:
+                            logs.info(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
+                        else:
+                            logs.info(f'Gravação da aula: "{aula}" Concluída!')
+                        
+                        # Mudar gravado no banco de dados
+                        # progresso.concluir_aula(aula_id)
+                        
+                        aulas_assistidas.append(
+                            f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
+                        )
+                        if enviarMsg:
                             whatsapp.buscar_contato(contato_msg)
-                            whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
-                            sucesso_gravacao = False
-                            continue
-                    
-                        if sucesso_gravacao:
-                            aula_index += 1
-                            curso_concluido = indice == qtde_aulas_curso
                             if curso_concluido:
-                                logs.info(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
+                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
                             else:
-                                logs.info(f'Gravação da aula: "{aula}" Concluída!')
-                            
-                            # Mudar gravado no banco de dados
-                            # progresso.concluir_aula(aula_id)
-                            
-                            aulas_assistidas.append(
-                                f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
-                            )
-                            if enviarMsg:
-                                whatsapp.buscar_contato(contato_msg)
-                                if curso_concluido:
-                                    whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
-                                else:
-                                    whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
-                            
-                            try:
-                                # Minimiza a tela
-                                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
-                            except:
-                                pass
-                            
-                            page.switch_to.default_content()                     
-                            sleep(0.5)
-                            tentativas = 0
-                            break
-                    else:
+                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
+                        
                         try:
                             # Minimiza a tela
                             page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
                         except:
-                            pass           
+                            pass
+                        
                         page.switch_to.default_content()                     
                         sleep(0.5)
                         tentativas = 0
                         break
+                else:
+                    try:
+                        # Minimiza a tela
+                        page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
+                    except:
+                        pass           
+                    page.switch_to.default_content()                     
+                    sleep(0.5)
+                    tentativas = 0
+                    break
 
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -354,7 +372,10 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
         
     
 if __name__ == "__main__":
+    sleep(2)
     while True:
+        logs = log.Logger()
+        logs.info(f'\n{'='*50}Código inciado{'='*50}')
         # if not criar_lock():
         #     sys.exit(1)
 
@@ -364,7 +385,7 @@ if __name__ == "__main__":
         signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
         aulas_assistidas = []
         try:
-            abrir_obs()
+            # abrir_obs()
             contato_msg = 'Gravação Curso'
             enviarMsg = os.getenv('ENVIARMSG')
             enviarMsg = True if enviarMsg.upper() == 'S' else False        
@@ -380,7 +401,6 @@ if __name__ == "__main__":
                 whatsapp = WhatsAppWeb()
                 whatsapp.iniciar_whatsapp()
 
-            logs = log.Logger()
             definir_volume_audio(100) 
 
             page = ConfigurarChrome.configurarChrome(headless=False, muted=True)
@@ -403,4 +423,5 @@ if __name__ == "__main__":
         finally:
             if page:
                 page.close()
+            logs.info(f'\n{'='*50}Código Finalizado{'='*50}')
             remover_lock()
