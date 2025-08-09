@@ -267,9 +267,11 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         prev_duration = currentTime # atualiza a duração anterior
                         err_ctrl = 0 # limpa o contador de erro
                         continue
-                    # fullDuration = 212.033333
-                    # currentTime = 211.975864
-                    # prev_duration = 211.975864
+
+                    if currentTime == 0 and prev_duration == 0:
+                        logs.erro('Fim do Vídeo')
+                        sucesso_gravacao = False
+                        break
 
                     # identifica video travado
                     err_ctrl += 1 
@@ -278,8 +280,6 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         
                         if gravar:
                             status = gravador.Stop(caminho,show_succ_msg=False)
-                            if not status:
-                                raise Exception("Gravador não conseguiu finalizar o vídeo.")
                             sleep(2)
                             gravador.Remove(aula,caminho)
                         
@@ -287,6 +287,11 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 
                 # Fim do vídeo
                 page.execute_script("document.querySelector('video').pause()") # parar o video
+                if not sucesso_gravacao:
+                    tentativas += 1
+                    logs.erro(f'Houve um erro na gravação do vídeo.')
+                    continue
+
                 if gravar:
                     status = gravador.Stop(caminho) # Parar o gravador
                     if not status:
@@ -303,9 +308,10 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                         logs.erro(rf'Erro linha: 288 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                         gravador.Remove(aula,caminho)
-                        whatsapp.buscar_contato(contato_msg)
-                        whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
                         sucesso_gravacao = False
+                        if enviarMsg:
+                            whatsapp.buscar_contato(contato_msg)
+                            whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
                         continue
                 
                     if sucesso_gravacao:
@@ -403,7 +409,7 @@ if __name__ == "__main__":
 
             definir_volume_audio(100) 
 
-            page = ConfigurarChrome.configurarChrome(headless=False, muted=True)
+            page = ConfigurarChrome.configurarChrome(headless=False, muted=False)
             page = fazerLogin.fazerLogin(page)
             progresso = Progresso()            
             main(page, enviarMsg=enviarMsg, gravar=gravar)    
