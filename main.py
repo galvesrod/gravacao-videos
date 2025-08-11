@@ -23,7 +23,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
-# from whatsappmsg import WhatsAppWeb
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -200,7 +199,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     with open(file_name, 'w',encoding='utf-8') as arquivo: 
                         arquivo.write(elemento)
                     
-                    # progresso.concluir_aula(aula_id)
+                    progresso.concluir_aula(aula_id)
                     break
 
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
@@ -321,7 +320,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                             logs.info(f'Gravação da aula: "{aula}" Concluída!')
                         
                         # Mudar gravado no banco de dados
-                        # progresso.concluir_aula(aula_id)
+                        progresso.concluir_aula(aula_id)
                         
                         aulas_assistidas.append(
                             f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
