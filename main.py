@@ -1,6 +1,7 @@
 import os
 import traceback, sys
 
+from WAHAClient import WAHAClient
 from utils import fazerLogin
 from utils import ConfigurarChrome
 from utils.formataNome import formataNome
@@ -22,7 +23,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
-from whatsappmsg import WhatsAppWeb
+# from whatsappmsg import WhatsAppWeb
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -242,8 +243,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 print(msg)
 
                 if enviarMsg:
-                    whatsapp.buscar_contato(contato_msg)
-                    whatsapp.enviar_mensagem(msg)
+                    client.send_text_message(GROUP_MESSAGE ,msg)
                 
                 currentTime = 0
                 prev_duration = 0
@@ -257,7 +257,6 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         break
 
                     if currentTime + 0.5 >= fullDuration:
-                        logs.erro('Fim do Vídeo')
                         break
 
                     currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
@@ -269,7 +268,6 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         continue
 
                     if currentTime == 0 and prev_duration == 0:
-                        logs.erro('Fim do Vídeo')
                         sucesso_gravacao = False
                         break
 
@@ -310,8 +308,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         gravador.Remove(aula,caminho)
                         sucesso_gravacao = False
                         if enviarMsg:
-                            whatsapp.buscar_contato(contato_msg)
-                            whatsapp.enviar_mensagem(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')                        
+                            msg = rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}'
+                            client.send_text_message(GROUP_MESSAGE, msg)
                         continue
                 
                     if sucesso_gravacao:
@@ -329,11 +327,10 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                             f'Aula: {formacao} > {trilha} > {curso} > {aula} foi gravada. Aula {'JÁ' if assistido else "NÃO"} assistida!'
                         )
                         if enviarMsg:
-                            whatsapp.buscar_contato(contato_msg)
                             if curso_concluido:
-                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
+                                client.send_text_message(GROUP_MESSAGE, f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
                             else:
-                                whatsapp.enviar_mensagem(f'Gravação da aula: "{aula}" Concluída!')
+                                client.send_text_message(GROUP_MESSAGE, 'Gravação da aula: "{aula}" Concluída!')
                         
                         try:
                             # Minimiza a tela
@@ -380,10 +377,21 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 if __name__ == "__main__":
     sleep(2)
     while True:
-        logs = log.Logger()
-        logs.info(f'\n{'='*50}Código inciado{'='*50}')
         # if not criar_lock():
         #     sys.exit(1)
+
+        WAHA_URL = "http://localhost:3000"  # URL DO WAHA
+        SESSION_NAME = "default"
+        GROUP_MESSAGE = "120363402733138387@g.us"  # Número do destinatário (sem @c.us)
+
+        # Criar cliente
+        client = WAHAClient(WAHA_URL, SESSION_NAME)        
+        enviarMsg = client.is_working()        
+
+        logs = log.Logger()
+        logs.info(f'\n{'='*50}Código inciado{'='*50}')
+        if enviarMsg:
+            logs.info("Será realizado comunicação via whatsapp")
 
         load_dotenv()
         atexit.register(cleanup)
@@ -391,21 +399,12 @@ if __name__ == "__main__":
         signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
         aulas_assistidas = []
         try:
-            # abrir_obs()
-            contato_msg = 'Gravação Curso'
-            enviarMsg = os.getenv('ENVIARMSG')
-            enviarMsg = True if enviarMsg.upper() == 'S' else False        
-            
             gravar = os.getenv('GRAVAR')
             gravar= True if gravar.upper() == 'S' else False
             if gravar:
                 gravador = Gravador() if gravar else None
                 if gravador.cl is None:
                     continue
-
-            if enviarMsg:
-                whatsapp = WhatsAppWeb()
-                whatsapp.iniciar_whatsapp()
 
             definir_volume_audio(100) 
 
