@@ -169,16 +169,3 @@ class WAHAClient:
         
         print("Timeout: Sessão não ficou pronta no tempo esperado")
         return False
-
-    def is_working (self) -> bool:        
-    # Iniciar sessão
-        waha_status = self.start_session()
-        if not waha_status:
-            print("Falha ao iniciar sessão")        
-        
-        # Aguardar sessão ficar pronta
-        waha_isReady = self.wait_for_ready()
-        if not waha_isReady:
-            print("Sessão não ficou pronta")
-
-        return waha_status == waha_isReady

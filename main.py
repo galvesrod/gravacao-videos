@@ -386,12 +386,15 @@ if __name__ == "__main__":
 
         # Criar cliente
         client = WAHAClient(WAHA_URL, SESSION_NAME)        
-        enviarMsg = client.is_working()        
+        enviarMsg = client.wait_for_ready(60)      
 
         logs = log.Logger()
         logs.info(f'\n{'='*50}Código inciado{'='*50}')
         if enviarMsg:
             logs.info("Será realizado comunicação via whatsapp")
+        else:
+            logs.info("Não será feito comunicação via whatsapp")
+
 
         load_dotenv()
         atexit.register(cleanup)
