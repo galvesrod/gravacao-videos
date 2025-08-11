@@ -377,8 +377,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
 if __name__ == "__main__":
     sleep(2)
     while True:
-        # if not criar_lock():
-        #     sys.exit(1)
+        if not criar_lock():
+            sys.exit(1)
 
         WAHA_URL = "http://localhost:3000"  # URL DO WAHA
         SESSION_NAME = "default"
@@ -402,6 +402,7 @@ if __name__ == "__main__":
         signal.signal(signal.SIGTERM, signal_handler)  # Terminação    
         aulas_assistidas = []
         try:
+            abrir_obs()
             gravar = os.getenv('GRAVAR')
             gravar= True if gravar.upper() == 'S' else False
             if gravar:
