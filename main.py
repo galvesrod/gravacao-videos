@@ -200,6 +200,8 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         arquivo.write(elemento)
                     
                     progresso.concluir_aula(aula_id)
+                    if enviarMsg:
+                        client.send_text_message(GROUP_MESSAGE, f'Gravação da aula: "{aula}" Concluída!')
                     break
 
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
@@ -329,7 +331,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                             if curso_concluido:
                                 client.send_text_message(GROUP_MESSAGE, f'Gravação da aula: "{aula}" Concluída! Esta é a ultima aula deste curso')
                             else:
-                                client.send_text_message(GROUP_MESSAGE, 'Gravação da aula: "{aula}" Concluída!')
+                                client.send_text_message(GROUP_MESSAGE, f'Gravação da aula: "{aula}" Concluída!')
                         
                         try:
                             # Minimiza a tela
@@ -385,7 +387,7 @@ if __name__ == "__main__":
 
         # Criar cliente
         client = WAHAClient(WAHA_URL, SESSION_NAME)        
-        enviarMsg = client.wait_for_ready(60)      
+        enviarMsg = client.wait_for_ready(15)      
 
         logs = log.Logger()
         logs.info(f'\n{'='*50}Código inciado{'='*50}')
