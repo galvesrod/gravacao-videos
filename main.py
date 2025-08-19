@@ -169,6 +169,75 @@ def obter_se_aula_assistido(page:webdriver, id:str) -> bool:
     classes = element.get_attribute('class')
     return True if "bg-green-500" in classes else False
 
+# Controles
+def obterTempoAtual(page:webdriver) -> int:
+    '''
+    Retorna o tempo atual do vídeo
+    '''
+    page = page
+    _SELECTOR = "return document.querySelector('video').currentTime"
+    return +page.execute_script(_SELECTOR)
+
+def alterarTempoAtual(page:webdriver, time:int=0) -> None:
+    '''
+    Seta o tempo atual do vídeo
+    '''
+    page = page
+    _SELECTOR = f"document.querySelector('video').currentTime = {time};"
+    # page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo
+    return page.execute_script(_SELECTOR)
+
+def toggleFullscreen(page:webdriver) ->None:
+    '''
+    Alterna entre colocar e tirar o vídeo de fullscreen
+    '''
+    _SELECTOR = '//*[@id="video-container"]/div[1]/div[3]/button[5]'
+    page.find_element(By.XPATH,_SELECTOR).click()
+
+
+def pause(page:webdriver)->None:
+    '''
+    Pausa o vídeo
+    '''
+    _SELECTOR = "document.querySelector('video').pause()"
+    page.execute_script(_SELECTOR)
+
+def play(page:WebDriverWait)->None:
+    '''
+    start o vídeo
+    '''
+    _SELECTOR = "document.querySelector('video').play()"
+    page.execute_script(_SELECTOR)
+
+def preparaVideoParaInicio(page:webdriver)->None:
+    '''
+    Prepara vídeo para iniciar a gravação;
+    * Seta qualidade para 1080p
+    * Seta velocidade do player para 1
+    * Seta Mudo para falso
+    '''
+    _SELECTOR = "document.querySelector('video')"
+    page.execute_script(f"{_SELECTOR}.quality = 1080;") # Garante qualidade de 1080p
+    page.execute_script(f"{_SELECTOR}.playbackRate = 1") # Garante que video será rodado em velocidade normal
+    page.execute_script(f"{_SELECTOR}.muted = false;") # Garante que video não está mudo
+
+
+def obterTamanhoVideo(page:webdriver) -> int:
+    '''
+    Retorna o tamanho tempo do video
+    '''
+    page = page
+    _SELECTOR = "return document.querySelector('video').duration"
+    return +page.execute_script(_SELECTOR)
+
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+# def pauseVideo(page:webdriver)->None:
+
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     page = page
     lista_aulas = progresso.obter_lista_gravacao()
@@ -208,32 +277,26 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     break
 
                 frame = page.find_element(By.XPATH,'//*[@id="player"]') # acessa o elemento player
-
                 page.switch_to.frame(frame)
                 sleep(0.5)
-                page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()   # Clica em maximizar                
-                
+
+                toggleFullscreen(page)   # Clica em maximizar                
                 print('========================================================================')
                 logs.info('========================================================================')
 
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').pause()") # pausa o video
+                pause(page) # pausa o video
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').quality = 1080;") # Garante qualidade de 1080p
-                page.execute_script("document.querySelector('video').playbackRate = 1") # Garante que video será rodado em velocidade normal
-                page.execute_script("document.querySelector('video').muted = false;") # Garante que video não está mudo
+                preparaVideoParaInicio(page)
                 sleep(0.5)
-                page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo                
-                currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
+                alterarTempoAtual(page) # Garante que video está no começo                
+                currentTime = obterTempoAtual(page) # Atualiza o tempo atual do video
                 while currentTime != 0: 
                     logs.erro("Tentando iniciar o video do zero")
-                    page.execute_script("document.querySelector('video').currentTime = 0;") # Garante que video está no começo
-                    currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video                    
+                    alterarTempoAtual(page) # Garante que video está no começo
+                    currentTime = obterTempoAtual(page) # Atualiza o tempo atual do video                    
 
-
-                fullDuration = page.execute_script("return document.querySelector('video').duration") # obtem a duaração do video
-                fullDuration = +fullDuration
-
+                fullDuration = obterTamanhoVideo(page) # obtem a duaração do video
                 
                 if gravar:
                     status = gravador.Start(aula,caminho) # inicia a gravação
@@ -241,7 +304,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         raise Exception("Gravador nao conseguiu iniciar o vídeo")
                 
                 msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'                
-                page.execute_script("document.querySelector('video').play()") # Inicia o vídeo
+                play(page) # Inicia o vídeo
                 logs.info(msg)
                 # os.system('cls')
                 print(msg)
@@ -263,7 +326,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     if currentTime + 0.5 >= fullDuration:
                         break
 
-                    currentTime = page.execute_script("return document.querySelector('video').currentTime;") # Atualiza o tempo atual do video
+                    currentTime = obterTempoAtual(page) # Atualiza o tempo atual do video
                     print(f'\r{segundos_para_minutos(currentTime)} de { segundos_para_minutos(fullDuration)}', end='', flush=True) #imprime o tempo
 
                     if prev_duration != currentTime: # se a duração atual for diferente da anterior, video em andamento
@@ -289,9 +352,9 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         break
 
                 # Fim do vídeo
-                page.execute_script("document.querySelector('video').pause()") # parar o video
+                pause(page) # parar o video
+                status = gravador.Stop(caminho,sucesso_gravacao) # Parar o gravador
                 if not sucesso_gravacao:
-                    status = gravador.Stop(caminho) # Parar o gravador
                     tentativas += 1
                     sleep(2)
                     gravador.Remove(aula,caminho)
@@ -299,7 +362,6 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     continue
 
                 if gravar:
-                    status = gravador.Stop(caminho) # Parar o gravador
                     if not status:
                         sucesso_gravacao = False
                         tentativas += 1
@@ -353,7 +415,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 else:
                     try:
                         # Minimiza a tela
-                        page.find_element(By.XPATH,'//*[@id="video-container"]/div[1]/div[3]/button[5]').click()
+                        toggleFullscreen(page)
                     except:
                         pass           
                     page.switch_to.default_content()                     
