@@ -41,11 +41,14 @@ class Gravador():
 
     def Start(self, name:str,caminho:str)->bool:
         try:
+            status = self.Status()
+            if status == 'Gravando':
+                self.cl.stop_record()
+            
             nome_com_data = formataNome(name)
             self.cl.set_record_directory(caminho)
-            self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data)    
+            self.cl.set_profile_parameter("Output","FilenameFormatting", nome_com_data) 
             
-
             # Iniciar a gravação
             self.cl.start_record()
             return True
@@ -53,12 +56,12 @@ class Gravador():
             print(f"Erro ao iniciar gravação: {e}")
             return False
     
-    def Stop(self,caminho:str, show_succ_msg:bool=True)->bool:
+    def Stop(self,caminho:str, sucesso:bool=True , show_succ_msg:bool=True)->bool:
         try:
             status = self.Status()
             if status == 'Gravando' or status == 'Pausado':
                 self.cl.stop_record()
-            if show_succ_msg:
+            if show_succ_msg and sucesso:
                 print(f"\nGravação Finalizado com sucesso.\nGravado em: {caminho}")
             return True
         except Exception as e:
