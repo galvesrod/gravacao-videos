@@ -75,7 +75,7 @@ def interromperGravacao():
     status = gravador.Status() if gravador else None
     if status == 'Gravando':        
         caminho = gravador.Obter_Caminho_Gravacao_atual()
-        nome = gravador.Obter_Nome_Gravacao_atual()        
+        nome = gravador.Obter_Nome_Gravacao_atual()   
         gravador.Stop(caminho,show_succ_msg=False)
         sleep(2)
         gravador.Remove(nome,caminho)
@@ -136,7 +136,10 @@ def segundos_para_minutos(seg) -> str:
     return f'{minutos:02d}:{segundos:02d}'
 
 def obterDuracaoDoArquivo(video_path):
+    if not os.path.exists(video_path):
+        return 0
     try:
+        print(video_path)
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)        
@@ -240,7 +243,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                 msg = f'Gravação Iniciada: Formação: {formacao}, Trilha: {trilha}, Curso:{curso}, Aula: {aula} | Aula {indice} de {qtde_aulas_curso}/{qtde_aulas} - Previsão: {segundos_para_minutos(fullDuration)}'                
                 page.execute_script("document.querySelector('video').play()") # Inicia o vídeo
                 logs.info(msg)
-                os.system('cls')
+                # os.system('cls')
                 print(msg)
 
                 if enviarMsg:
@@ -283,11 +286,15 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                             gravador.Remove(aula,caminho)
                         
                         sleep(0.3)
+                        break
 
                 # Fim do vídeo
                 page.execute_script("document.querySelector('video').pause()") # parar o video
                 if not sucesso_gravacao:
+                    status = gravador.Stop(caminho) # Parar o gravador
                     tentativas += 1
+                    sleep(2)
+                    gravador.Remove(aula,caminho)
                     logs.erro(f'Houve um erro na gravação do vídeo.')
                     continue
 
@@ -387,7 +394,7 @@ if __name__ == "__main__":
 
         # Criar cliente
         client = WAHAClient(WAHA_URL, SESSION_NAME)        
-        enviarMsg = client.wait_for_ready(15)      
+        enviarMsg = client.wait_for_ready(15)
 
         logs = log.Logger()
         logs.info(f'\n{'='*50}Código inciado{'='*50}')
