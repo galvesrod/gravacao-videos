@@ -36,7 +36,8 @@ class Gravador():
         # ignorar: \/:*?"<>|
         name = formataNome(name)
         file = fr'{caminho}\{name}.mkv'  
-        os.remove(file)
+        if os.path.exists(file):
+            os.remove(file)
 
     def Start(self, name:str,caminho:str)->bool:
         try:
@@ -53,8 +54,10 @@ class Gravador():
             return False
     
     def Stop(self,caminho:str, show_succ_msg:bool=True)->bool:
-        try:            
-            self.cl.stop_record()
+        try:
+            status = self.Status()
+            if status == 'Gravando' or status == 'Pausado':
+                self.cl.stop_record()
             if show_succ_msg:
                 print(f"\nGravação Finalizado com sucesso.\nGravado em: {caminho}")
             return True
