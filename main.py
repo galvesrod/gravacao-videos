@@ -139,7 +139,6 @@ def obterDuracaoDoArquivo(video_path):
     if not os.path.exists(video_path):
         return 0
     try:
-        print(video_path)
         cap = cv2.VideoCapture(video_path)
         fps = cap.get(cv2.CAP_PROP_FPS)
         frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)        
@@ -194,7 +193,6 @@ def toggleFullscreen(page:webdriver) ->None:
     _SELECTOR = '//*[@id="video-container"]/div[1]/div[3]/button[5]'
     page.find_element(By.XPATH,_SELECTOR).click()
 
-
 def pause(page:webdriver)->None:
     '''
     Pausa o vídeo
@@ -221,7 +219,6 @@ def preparaVideoParaInicio(page:webdriver)->None:
     page.execute_script(f"{_SELECTOR}.playbackRate = 1") # Garante que video será rodado em velocidade normal
     page.execute_script(f"{_SELECTOR}.muted = false;") # Garante que video não está mudo
 
-
 def obterTamanhoVideo(page:webdriver) -> int:
     '''
     Retorna o tamanho tempo do video
@@ -229,14 +226,6 @@ def obterTamanhoVideo(page:webdriver) -> int:
     page = page
     _SELECTOR = "return document.querySelector('video').duration"
     return +page.execute_script(_SELECTOR)
-
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
-# def pauseVideo(page:webdriver)->None:
 
 def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
     page = page
