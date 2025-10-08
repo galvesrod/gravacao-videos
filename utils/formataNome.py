@@ -20,4 +20,4 @@ def formataNome(nome:str, type: Literal['DIR', 'FL'] = 'FL')-> str:
         nome = nome.replace(':','') 
     
             
-    return nome
+    return nome.strip()
