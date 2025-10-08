@@ -23,7 +23,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from gravador import Gravador
 from dotenv import load_dotenv
-from dotenv import load_dotenv
 load_dotenv()
 
 cleanup_executado = False
@@ -355,6 +354,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                         sucesso_gravacao = False
                         tentativas += 1
                         raise Exception("Gravador não conseguiu finalizar o vídeo.")
+                    caminho = formataNome(caminho, 'DIR') # formata o nome do caminho
                     aula = formataNome(aula) # formata o nome da aula
                                     
                     arquivo = rf'{caminho}\{aula}.mkv'                    
@@ -364,7 +364,7 @@ def main(page:webdriver, gravar:bool=True, enviarMsg:bool=True):
                     if tamanho_video -2 > fullDuration or tamanho_video +2 < fullDuration:
                         print(rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
                         logs.erro(rf'Erro linha: 288 Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}')
-                        gravador.Remove(aula,caminho)
+                        gravador.Remove(aula,caminho) #Ativar
                         sucesso_gravacao = False
                         if enviarMsg:
                             msg = rf'Aconteceu algum erro. A gravação do arquivo está difente da duração prevista: Tamanho da aula web: {fullDuration}, tamanho do arquivo: {tamanho_video}'
@@ -438,17 +438,15 @@ if __name__ == "__main__":
     while True:
         if not criar_lock():
             sys.exit(1)
-
+        logs = log.Logger()
+        logs.info(f'\n{'='*50}Código inciado{'='*50}')
         WAHA_URL = "http://localhost:3000"  # URL DO WAHA
         SESSION_NAME = "default"
         GROUP_MESSAGE = "120363402733138387@g.us"  # Número do destinatário (sem @c.us)
-
         # Criar cliente
         client = WAHAClient(WAHA_URL, SESSION_NAME)        
         enviarMsg = client.wait_for_ready(15)
 
-        logs = log.Logger()
-        logs.info(f'\n{'='*50}Código inciado{'='*50}')
         if enviarMsg:
             logs.info("Será realizado comunicação via whatsapp")
         else:
