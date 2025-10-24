@@ -51,7 +51,7 @@ class Progresso:
                 a.indice,
                 (select max(a2.indice) qtde_aulas from aulas a2 where a.id_curso = a2.id_curso   ) qtde_aulas,
                 a.aula_id cd_aula,
-                f.path || t.path || c.path || cap.path win_path
+                trim(f.PATH) || trim(t.PATH) || trim(c.PATH) || trim(cap.PATH) win_path
                 /*replace(f.path_linux || t.path || c.path || cap.path,'\\','/') linux_path*/
             from formacoes f
 
