@@ -1,0 +1,11 @@
+--drop table trilhas
+create table cursos (
+	id integer primary key AUTOINCREMENT,
+	indice integer not null, 
+	nome text not null,
+	url text not null,
+	id_trilha integer not null,
+	path text not null,
+	FOREIGN key (id_trilha) references trilhas(id)
+);
+

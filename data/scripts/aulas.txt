@@ -1,0 +1,12 @@
+--DROP TABLE aulas
+create table aulas (
+	id integer PRIMARY KEY AUTOINCREMENT,
+	aula_id integer ,
+	indice integer not null,	
+	nome text not null,
+	id_capitulo integer not null,
+	id_curso integer not null	,
+	data_inclusao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	gravado boolean default FALSE,
+	UNIQUE(aula_id) ON CONFLICT IGNORE
+);

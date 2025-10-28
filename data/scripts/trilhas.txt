@@ -1,0 +1,11 @@
+--drop table trilhas
+create table trilhas (
+	id integer NOT NULL PRIMARY KEY,
+	indice integer not null, 
+	nome text not null,
+	url text not null,
+	id_formacao integer not null,	
+	path text not null,
+	FOREIGN key (id_formacao) references formacoes(id),
+	UNIQUE(indice, id_formacao, nome) ON CONFLICT IGNORE
+);

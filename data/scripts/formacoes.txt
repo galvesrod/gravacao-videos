@@ -1,0 +1,15 @@
+--drop table formacoes
+create table formacoes (
+	id integer primary key,
+	indice integer not null, 
+	nome text not null,
+	url text not null,
+	path text not null
+);
+
+insert into formacoes (id, indice, nome, url, path) values
+(1,1, 'Fundamentos','https://escola.formacao.dev/fundamentos-dev/trilhas','D:\Formação Dev\Fundamentos'),
+(2,2, 'Especialista','https://escola.formacao.dev/especialista-dev/trilhas','D:\Formação Dev\Especialista'),
+(3,3, 'Arquiteto','https://escola.formacao.dev/arquiteto-dev/trilhas','D:\Formação Dev\Arquiteto'),
+(4,4, 'Humano','https://escola.formacao.dev/humano-dev/trilhas','D:\Formação Dev\Fundamentos\Humano'),
+(5,5, 'Mentoria','https://escola.formacao.dev/mentoria-dev/trilhas','D:\Formação Dev\Fundamentos\Mentoria')

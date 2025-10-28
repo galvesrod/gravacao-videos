@@ -1,0 +1,9 @@
+--drop table capitulos
+create table capitulos (
+	id integer not null,
+	id_curso not null,
+	
+	nome text not null,
+	path text not null,
+	primary key (id, id_curso)
+);
