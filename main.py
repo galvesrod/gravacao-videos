@@ -3,7 +3,7 @@ import traceback, sys
 
 from WAHAClient import WAHAClient
 from utils import fazerLogin
-from utils import ConfigurarChrome
+from utils.configurarChrome import configurarChrome
 from utils.formataNome import formataNome
 from utils.lock import criar_lock, remover_lock
 from utils.progresso import Progresso
@@ -467,9 +467,9 @@ if __name__ == "__main__":
                 if gravador.cl is None:
                     continue
 
-            definir_volume_audio(100) 
+            definir_volume_audio(100)             
+            page = configurarChrome(headless=False, muted=False)
 
-            page = ConfigurarChrome.configurarChrome(headless=False, muted=False)
             page = fazerLogin.fazerLogin(page)
             progresso = Progresso()            
             main(page, enviarMsg=enviarMsg, gravar=gravar)    
