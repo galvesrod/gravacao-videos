@@ -141,7 +141,7 @@ class Progresso:
                 titulo = curso.find_element(By.CSS_SELECTOR,'.font-black.text-lg').get_attribute("textContent")
                 link = curso.get_attribute("href")
                 caminho = f'\\{index} - {titulo.replace('/','').replace('?','')}'
-                self.inserir_cursos((index,titulo,link,trilha[0], caminho))
+                self.inserir_cursos(( index, titulo, link, trilha[0], caminho ))
                 print(f'Inserido cursos: {index},{titulo},{link},{trilha[0]}')
 
             print(f'Inserido todos os cursos da trilha {trilha[2]}')
@@ -183,10 +183,10 @@ class Progresso:
         print(f'Iniciou em {data_inicio} e finalizou em {data_terminio}')
 
 if __name__ == '__main__':
-    import ConfigurarChrome
+    from configurarChrome import configurarChrome
     from fazerLogin import fazerLogin
     print('Executar Processo de Banco de Dados')
-    page = ConfigurarChrome.configurarChrome(True)
+    page = configurarChrome(True)
     page = fazerLogin(page)
     p = Progresso()
     p.run(page=page)
