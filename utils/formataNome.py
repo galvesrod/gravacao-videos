@@ -14,6 +14,7 @@ def formataNome(nome:str, type: Literal['DIR', 'FL'] = 'FL')-> str:
     nome = nome.replace('?','')
     nome = nome.replace('>','')
     nome = nome.replace('<','')
+    nome = nome.replace('  ',' ')
     
     if type == 'FL':
         nome = nome.replace('\\','')
