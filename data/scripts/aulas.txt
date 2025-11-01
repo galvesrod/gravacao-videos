@@ -1,12 +1,16 @@
 --DROP TABLE aulas
 create table aulas (
 	id integer PRIMARY KEY AUTOINCREMENT,
-	aula_id integer ,
+	aula_id text ,
 	indice integer not null,	
 	nome text not null,
 	id_capitulo integer not null,
 	id_curso integer not null	,
 	data_inclusao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	gravado boolean default FALSE,
-	UNIQUE(aula_id) ON CONFLICT IGNORE
+	verificado boolean default FALSE,
+	UNIQUE(aula_id) ON CONFLICT IGNORE,
+	FOREIGN key (id_capitulo) REFERENCES capitulos (id),
+	FOREIGN key (id_curso) REFERENCES capitulos (id_curso)
 );
+
