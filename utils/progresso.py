@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException,StaleElementReferenceException
 import sqlite3
 from datetime import datetime
+from formataNome import formataNome
 ################# teste
 
 class Progresso:
@@ -126,8 +127,9 @@ class Progresso:
             trilhas = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full.relative.overflow-hidden')
             for index,trilha in enumerate(trilhas,start=1):
                 titulo = trilha.find_element(By.CSS_SELECTOR,'span>div>div>div:nth-child(2)' ).get_attribute("textContent")
+                titulo = formataNome(titulo, 'FL')
                 link = trilha.get_attribute("href")
-                caminho = f'\\{index} - Trilha {titulo.replace('/','').replace('?','')}'
+                caminho = f'\\{index} - Trilha {titulo}'
                 self.insert_trilhas((index,titulo,link,formacao[0],caminho))
                 print(f'Inserido trilha: {index},{titulo},{link},{formacao[0]}')
 
@@ -139,8 +141,9 @@ class Progresso:
             cursos = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full')
             for index, curso in enumerate(cursos, start=1):
                 titulo = curso.find_element(By.CSS_SELECTOR,'.font-black.text-lg').get_attribute("textContent")
+                titulo = formataNome(titulo, 'FL')
                 link = curso.get_attribute("href")
-                caminho = f'\\{index} - {titulo.replace('/','').replace('?','')}'
+                caminho = f'\\{index} - {titulo}'
                 self.inserir_cursos(( index, titulo, link, trilha[0], caminho ))
                 print(f'Inserido cursos: {index},{titulo},{link},{trilha[0]}')
 
@@ -155,8 +158,9 @@ class Progresso:
             for cap_index, cap in enumerate(caps, start=1):
                 id = cap_index
                 nome = cap.find_element(By.CSS_SELECTOR,f'span').get_attribute('textContent')
+                nome = formataNome(nome, 'FL')
                 curso_id = curso[0]
-                caminho = f'\\{id} - {nome.replace('/','').replace('?','')}'
+                caminho = f'\\{id} - {nome}'
                 self.inserir_capitulos((id, curso_id, nome,caminho))
 
 
@@ -168,6 +172,7 @@ class Progresso:
                     indice = indice_aula
                     # nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').text
                     nome = aula.find_element(By.CSS_SELECTOR,'.text-sm.overflow-hidden').get_attribute('textContent')
+                    nome = formataNome(nome, 'FL')
                     if nome == '' or nome is None:
                         print(nome)
                     cap_id = cap_index
