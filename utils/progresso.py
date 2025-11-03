@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException,StaleElementReferenceException
 import sqlite3
 from datetime import datetime
-from formataNome import formataNome
+from utils.formataNome import formataNome
 ################# teste
 
 class Progresso:
