@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException,StaleElementReferenceException
 import sqlite3
 from datetime import datetime
-from utils.formataNome import formataNome
+
 ################# teste
 
 class Progresso:
@@ -188,6 +188,7 @@ class Progresso:
         print(f'Iniciou em {data_inicio} e finalizou em {data_terminio}')
 
 if __name__ == '__main__':
+    from formataNome import formataNome
     from configurarChrome import configurarChrome
     from fazerLogin import fazerLogin
     print('Executar Processo de Banco de Dados')
