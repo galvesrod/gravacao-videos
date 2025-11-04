@@ -12,4 +12,6 @@ insert into formacoes (id, indice, nome, url, path) values
 (2,2, 'Especialista','https://escola.formacao.dev/especialista-dev/trilhas','D:\Formação Dev\Especialista'),
 (3,3, 'Arquiteto','https://escola.formacao.dev/arquiteto-dev/trilhas','D:\Formação Dev\Arquiteto'),
 (4,4, 'Humano','https://escola.formacao.dev/humano-dev/trilhas','D:\Formação Dev\Fundamentos\Humano'),
-(5,5, 'Mentoria','https://escola.formacao.dev/mentoria-dev/trilhas','D:\Formação Dev\Fundamentos\Mentoria')
+(5,5, 'Mentoria','https://escola.formacao.dev/mentoria-dev/trilhas','D:\Formação Dev\Fundamentos\Mentoria'),
+(6,6, 'Formacao IA','https://escola.formacao.dev/ia-dev/trilhas','D:\Formacao Dev\Formacao IA'),
+(7,7, 'Formacao Express','https://escola.formacao.dev/formacao-express/trilhas','D:\Formação Dev\7 - Formacao Express')
