@@ -43,7 +43,7 @@ class CheckFiles:
             inner join aulas a on
                 cap.id = a.id_capitulo
                 and c.id = a.id_curso
-            where gravado = 0
+            where verificado = 0
             order by f.indice, t.indice, c.indice, cap.id, a.indice
             '''
         cursor.execute(sql)
@@ -54,7 +54,7 @@ class CheckFiles:
     def concluir_aula(self, aula_id):
         conn = self.conn
         cursor = conn.cursor()
-        sql = f'''update aulas set gravado = 1 where id = {aula_id}'''
+        sql = f'''update aulas set verificado = 1 where id = {aula_id}'''
         cursor.execute(sql)
         conn.commit()
         cursor.close()
