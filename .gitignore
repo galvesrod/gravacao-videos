@@ -7,6 +7,5 @@ logs
 whatsapp_profile
 *.lab.py
 *.old.py
-data/aulas.db
 utils/lock.lock
 start.bat
