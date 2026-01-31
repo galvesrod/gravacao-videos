@@ -27,6 +27,12 @@ def configurarChrome(headless:bool=False, muted:bool=False) -> webdriver:
         chrome_options.add_argument("--disable-features=VizDisplayCompositor")
         chrome_options.add_argument("--autoplay-policy=document-user-activation-required")
     service = Service('chromedriver.exe')  # caminho do chromedriver
+
+    prefs = {
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False
+    }
+    chrome_options.add_experimental_option("prefs",prefs)
     
     page = webdriver.Chrome(service=service, options=chrome_options)
     page.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})") 
