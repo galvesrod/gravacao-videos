@@ -95,7 +95,7 @@ def definir_volume_audio(percentual):
     try:
         
         devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        interface = devices._dev.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
         volume = cast(interface, POINTER(IAudioEndpointVolume))
         
         # Converte percentual para escala 0-1
@@ -444,8 +444,9 @@ if __name__ == "__main__":
         SESSION_NAME = "default"
         GROUP_MESSAGE = "120363402733138387@g.us"  # Número do destinatário (sem @c.us)
         # Criar cliente
-        client = WAHAClient(WAHA_URL, SESSION_NAME)        
-        enviarMsg = client.wait_for_ready(15)
+        # client = WAHAClient(WAHA_URL, SESSION_NAME)        
+        # enviarMsg = client.wait_for_ready(15)
+        enviarMsg = False
 
         if enviarMsg:
             logs.info("Será realizado comunicação via whatsapp")
