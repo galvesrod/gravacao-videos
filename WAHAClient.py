@@ -16,7 +16,8 @@ class WAHAClient:
         self.base_url = base_url.rstrip('/')
         self.session_name = session_name
         self.headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-Api-Key': "LQ9rsMjtwrSzH"  # Substitua pela sua chave de API se necessário
         }
     
     def start_session(self) -> bool:
