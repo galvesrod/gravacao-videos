@@ -444,9 +444,9 @@ if __name__ == "__main__":
         SESSION_NAME = "default"
         GROUP_MESSAGE = "120363402733138387@g.us"  # Número do destinatário (sem @c.us)
         # Criar cliente
-        # client = WAHAClient(WAHA_URL, SESSION_NAME)        
-        # enviarMsg = client.wait_for_ready(15)
-        enviarMsg = False
+        client = WAHAClient(WAHA_URL, SESSION_NAME)        
+        enviarMsg = client.wait_for_ready(15)
+        enviarMsg = True if enviarMsg else False
 
         if enviarMsg:
             logs.info("Será realizado comunicação via whatsapp")
