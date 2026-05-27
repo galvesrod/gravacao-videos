@@ -123,34 +123,34 @@ class Progresso:
     def run(self, page:webdriver):
         data_inicio = datetime.now()
         # Insere trilhas de cada formação
-        # formacoes = self.obter_formacoes()
-        # for formacao in formacoes:
-        #     page.get(formacao[3])
-        #     trilhas = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full.relative.overflow-hidden')
-        #     for index,trilha in enumerate(trilhas,start=1):
-        #         titulo = trilha.find_element(By.CSS_SELECTOR,'span>div>div>div:nth-child(2)' ).get_attribute("textContent")
-        #         titulo = formataNome(titulo, 'FL')
-        #         link = trilha.get_attribute("href")
-        #         caminho = f'\\{index} - Trilha {titulo}'
-        #         self.insert_trilhas((index,titulo,link,formacao[0],caminho))
-        #         print(f'Inserido trilha: {index},{titulo},{link},{formacao[0]}')
+        formacoes = self.obter_formacoes()
+        for formacao in formacoes:
+            page.get(formacao[3])
+            trilhas = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full.relative.overflow-hidden')
+            for index,trilha in enumerate(trilhas,start=1):
+                titulo = trilha.find_element(By.CSS_SELECTOR,'span>div>div>div:nth-child(2)' ).get_attribute("textContent")
+                titulo = formataNome(titulo, 'FL')
+                link = trilha.get_attribute("href")
+                caminho = f'\\{index} - Trilha {titulo}'
+                self.insert_trilhas((index,titulo,link,formacao[0],caminho))
+                print(f'Inserido trilha: {index},{titulo},{link},{formacao[0]}')
 
-        #     print(f'Inserido todas as trilhas da formação {formacao[2]}')
+            print(f'Inserido todas as trilhas da formação {formacao[2]}')
 
-        # # Insere cursos de cada trilha
-        # trilhas = self.obter_trilhas()
-        # for trilha in trilhas:
-        #     page.get(trilha[3])
-        #     cursos = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full')
-        #     for index, curso in enumerate(cursos, start=1):
-        #         titulo = curso.find_element(By.CSS_SELECTOR,'.font-black.text-lg').get_attribute("textContent")
-        #         titulo = formataNome(titulo, 'FL')
-        #         link = curso.get_attribute("href")
-        #         caminho = f'\\{index} - {titulo}'
-        #         self.inserir_cursos(( index, titulo, link, trilha[0], caminho ))
-        #         print(f'Inserido cursos: {index},{titulo},{link},{trilha[0]}')
+        # Insere cursos de cada trilha
+        trilhas = self.obter_trilhas()
+        for trilha in trilhas:
+            page.get(trilha[3])
+            cursos = page.find_elements(By.CSS_SELECTOR,'a[href].w-full.h-full')
+            for index, curso in enumerate(cursos, start=1):
+                titulo = curso.find_element(By.CSS_SELECTOR,'.font-black.text-lg').get_attribute("textContent")
+                titulo = formataNome(titulo, 'FL')
+                link = curso.get_attribute("href")
+                caminho = f'\\{index} - {titulo}'
+                self.inserir_cursos(( index, titulo, link, trilha[0], caminho ))
+                print(f'Inserido cursos: {index},{titulo},{link},{trilha[0]}')
 
-        #     print(f'Inserido todos os cursos da trilha {trilha[2]}')
+            print(f'Inserido todos os cursos da trilha {trilha[2]}')
 
         cursos = self.obter_cursos()
         for curso in cursos:
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     from configurarChrome import configurarChrome
     from fazerLogin import fazerLogin
     print('Executar Processo de Banco de Dados')
-    page = configurarChrome(True)
+    page = configurarChrome(False)
     page = fazerLogin(page)
     p = Progresso()
     p.run(page=page)
