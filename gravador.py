@@ -7,7 +7,7 @@ from utils.formataNome import formataNome
 class Gravador():
     def __init__(self):
         try:
-            self.cl = ReqClient(host='localhost', port=4455, password='yABrJeDcn6dC5v6b')  # Substitua 'sua_senha' pela senha configurada no OBS WebSocket
+            self.cl = ReqClient(host='localhost', port=4455, password='7ZLD2dcug7RjDNBV')  # Substitua 'sua_senha' pela senha configurada no OBS WebSocket
         except Exception as e:
             self.cl = None
             print(e)
