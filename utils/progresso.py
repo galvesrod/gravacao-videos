@@ -122,7 +122,7 @@ class Progresso:
 
     def run(self, page:webdriver):
         data_inicio = datetime.now()
-        # Insere trilhas de cada formação
+        # # # Insere trilhas de cada formação
         formacoes = self.obter_formacoes()
         for formacao in formacoes:
             page.get(formacao[3])
@@ -137,7 +137,7 @@ class Progresso:
 
             print(f'Inserido todas as trilhas da formação {formacao[2]}')
 
-        # Insere cursos de cada trilha
+        # # # Insere cursos de cada trilha
         trilhas = self.obter_trilhas()
         for trilha in trilhas:
             page.get(trilha[3])
@@ -154,7 +154,14 @@ class Progresso:
 
         cursos = self.obter_cursos()
         for curso in cursos:
+            print(curso)
             page.get(curso[3])
+
+            acesso_bloqueado = page.find_elements(By.CSS_SELECTOR,'div.flex-1.flex.justify-center.mt-32 img[alt="Acesso Bloqueado"]')
+            if len(acesso_bloqueado) > 0:
+                print(f'Curso {curso[2]} bloqueado, pulando para o próximo curso')
+                continue
+
             # seletor para buscar quadro com capitulos
             sel_quadro_capitulos = f'div.ml-2.relative.w-\\[410px\\].hidden.lg\\:flex.bg-gradient-to-r.from-zinc-900.via-zinc-900.to-black.rounded-md.overflow-hidden'
             caps = page.find_element(By.CSS_SELECTOR,sel_quadro_capitulos)
@@ -206,7 +213,7 @@ if __name__ == '__main__':
     from configurarChrome import configurarChrome
     from fazerLogin import fazerLogin
     print('Executar Processo de Banco de Dados')
-    page = configurarChrome(False)
+    page = configurarChrome(True)
     page = fazerLogin(page)
     p = Progresso()
     p.run(page=page)
