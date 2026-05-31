@@ -1,10 +1,24 @@
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
+import screeninfo
+
 
 def configurarChrome(headless:bool=False, muted:bool=False) -> webdriver:
     #  Configurar Selenium
     chrome_options = Options()
+
+
+    monitores = screeninfo.get_monitors()
+    monitor = monitores[1]  # Seleciona o primeiro monitor
+    x = monitor.x
+    y = monitor.y
+    largura = monitor.width
+    altura = monitor.height
+
+    chrome_options.add_argument(f'--window-position={x},{y}')
+    chrome_options.add_argument(f'--window-size={largura},{altura}')
+
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument('--disable-logging')
     chrome_options.add_argument("--log-level=3")
